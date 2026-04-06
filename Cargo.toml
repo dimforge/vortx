@@ -1,0 +1,56 @@
+[package]
+name = "vortx"
+authors = ["Sébastien Crozet <sebcrozet@dimforge.com>"]
+description = "Cross-platform GPU tensor library with Rust."
+repository = "https://github.com/dimforge/vortx"
+version = "0.1.0"
+edition = "2024"
+license = "Apache-2.0"
+
+[workspace]
+members = [
+    "vortx-shaders"
+]
+resolver = "2"
+
+[features]
+default = ["webgpu"]
+webgpu = [ "khal/webgpu" ]
+cpu = ["khal/cpu", "vortx-shaders/cpu"]
+cpu-parallel = ["cpu", "vortx-shaders/cpu-parallel"]
+cuda = ["khal/cuda", "khal-builder/cuda", "vortx-shaders/cuda"]
+push_constants = ["khal/push_constants", "vortx-shaders/push_constants"]
+subgroup_ops = ["khal/subgroup_ops", "vortx-shaders/subgroup_ops"]
+
+[workspace.dependencies]
+khal-std = { version = "0.1", git = "https://github.com/dimforge/khal" }
+khal = { version = "0.1", git = "https://github.com/dimforge/khal", features = ["derive"]}
+
+[dependencies]
+bytemuck = "1"
+include_dir = "0.7"
+nalgebra = "0.34"
+khal = { workspace = true }
+khal-std = { workspace = true }
+# Shader crate provides both GPU shader code and generated ShaderArgs via spirv_bindgen
+vortx-shaders = { path = "vortx-shaders" }
+
+[dev-dependencies]
+nalgebra = { version = "0.34", features = ["rand"] }
+futures-test = "0.3"
+serial_test = "3"
+approx = "0.5"
+async-std = { version = "1", features = ["attributes"] }
+plotly = "0.12.1"
+indexmap = "2"
+anyhow = "1"
+wgpu = "29"
+
+[build-dependencies]
+khal-builder = { git = "https://github.com/dimforge/khal "}
+
+[patch.crates-io]
+#khal-builder = { path = "../khal/crates/khal-builder" }
+#khal = { path = "../khal/crates/khal" }
+#khal-std = { path = "../khal/crates/khal-std" }
+#glamx = { git = "https://github.com/dimforge/glamx", branch = "bytemuck" }

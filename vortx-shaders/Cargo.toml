@@ -1,0 +1,29 @@
+[package]
+name = "vortx-shaders"
+version = "0.1.0"
+edition = "2021"
+
+[features]
+unsafe_remove_boundchecks = ["khal-std/unsafe_remove_boundchecks"]
+
+# When enabled, tensor shapes are passed via push constants instead of uniform buffers.
+# This can be more efficient for frequently changing small data like shapes.
+# Note: Push constants have a size limit (typically 128-256 bytes depending on hardware).
+push_constants = []
+
+# When enabled, shaders will use subgroup operations for reductions.
+# When disabled, shaders will use manual reduction via shared memory.
+subgroup_ops = []
+cpu = ["khal-std/cpu"]
+cpu-parallel = ["khal-std/cpu-parallel"]
+cuda = ["khal-std/cuda"]
+
+[dependencies]
+khal-std = { workspace = true }
+# glamx provides UVec3 and other glam types (no_std compatible, used on all targets).
+glamx = { version = "0.2", default-features = false, features = ["nostd-libm", "bytemuck"] }
+
+# Host-only dependencies (excluded on GPU targets: spirv and nvptx64).
+[target.'cfg(not(any(target_arch = "spirv", target_arch = "nvptx64")))'.dependencies]
+khal = { workspace = true }
+bytemuck = { version = "1", features = ["derive"] }

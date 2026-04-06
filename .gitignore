@@ -1,0 +1,13 @@
+*.lock
+.vscode
+.idea
+.DS_Store
+.claude
+dist
+dist2d
+dist3d
+assets/**/*.bin
+src/autogen
+target
+autogen
+shaders-spirv
