@@ -33,23 +33,24 @@ linear-algebra operations as GPU compute shaders written in Rust with [rust-gpu]
 
 ### cargo-gpu (required for SPIR-V / WebGPU)
 
-The crates.io version of `cargo-gpu` is outdated. Install from Git and let it set up its Rust
-toolchain:
+Install `cargo-gpu` from crates.io:
 
 ```bash
-cargo install --git https://github.com/Rust-GPU/cargo-gpu cargo-gpu
+cargo install cargo-gpu --version 0.10.0-alpha.1
 cargo gpu install
 ```
 
 ### cargo-cuda (required for CUDA / PTX)
 
-`cargo-cuda` lives in this repository (`crates/cargo-cuda`). Install it from the workspace and
-build the `rustc_codegen_nvvm` codegen backend:
+Install `cargo-cuda` from crates.io:
 
 ```bash
-cargo install --path https://github.com/dimforge/khal cargo-cuda
+cargo install cargo-cuda --version 0.1.0
 cargo cuda install
 ```
+
+**Important:** the cuda backend support requires depending on the github version of khal instead of the version
+on `crates.io`.
 
 This requires the **CUDA toolkit** to be installed and the `CUDA_PATH` environment variable to
 point to it (e.g. `/usr/local/cuda`). The install step downloads a pinned Rust nightly, adds the

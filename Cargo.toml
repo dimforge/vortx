@@ -23,8 +23,8 @@ push_constants = ["khal/push_constants", "vortx-shaders/push_constants"]
 subgroup_ops = ["khal/subgroup_ops", "vortx-shaders/subgroup_ops"]
 
 [workspace.dependencies]
-khal-std = { version = "0.1", git = "https://github.com/dimforge/khal" }
-khal = { version = "0.1", git = "https://github.com/dimforge/khal", features = ["derive"]}
+khal-std = "0.1"
+khal = { version = "0.1", features = ["derive"]}
 
 [dependencies]
 bytemuck = "1"
@@ -47,9 +47,9 @@ anyhow = "1"
 wgpu = "29"
 
 [build-dependencies]
-khal-builder = { git = "https://github.com/dimforge/khal "}
+khal-builder = "0.1"
 
-[patch.crates-io]
+#[patch.crates-io]
 #khal-builder = { path = "../khal/crates/khal-builder" }
 #khal = { path = "../khal/crates/khal" }
 #khal-std = { path = "../khal/crates/khal-std" }
