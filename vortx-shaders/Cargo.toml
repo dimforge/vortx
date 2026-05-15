@@ -28,7 +28,10 @@ khal-std = { workspace = true }
 # glamx provides UVec3 and other glam types (no_std compatible, used on all targets).
 glamx = { version = "0.2", default-features = false, features = ["nostd-libm", "bytemuck"] }
 
-# Host-only dependencies (excluded on GPU targets: spirv and nvptx64).
+[build-dependencies]
+khal-std = { workspace = true }
+
+# Host-only dependencies (excluded on GPU targets: spirv, nvptx64).
 [target.'cfg(not(any(target_arch = "spirv", target_arch = "nvptx64")))'.dependencies]
 khal = { workspace = true }
 bytemuck = { version = "1", features = ["derive"] }

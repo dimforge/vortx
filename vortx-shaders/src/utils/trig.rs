@@ -1,6 +1,6 @@
 //! Trigonometric utility functions.
 
-#[cfg(any(target_arch = "spirv", target_arch = "nvptx64"))]
+#[cfg(target_arch_is_gpu)]
 use khal_std::num_traits::Float;
 
 /// The value of pi.

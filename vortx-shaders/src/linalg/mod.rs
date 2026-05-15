@@ -13,13 +13,13 @@ pub use shape::Shape;
 pub use shape::{Shapes1, Shapes2, Shapes3};
 
 // Re-export generated ShaderArgs structs (only available on host)
-#[cfg(not(any(target_arch = "spirv", target_arch = "nvptx64")))]
+#[cfg(not(target_arch_is_gpu))]
 pub use contiguous::{Contiguous, ContiguousWithOffset};
-#[cfg(not(any(target_arch = "spirv", target_arch = "nvptx64")))]
+#[cfg(not(target_arch_is_gpu))]
 pub use gemm::{GemmNaive, GemmTiled};
-#[cfg(not(any(target_arch = "spirv", target_arch = "nvptx64")))]
+#[cfg(not(target_arch_is_gpu))]
 pub use op_assign::{GpuAdd, GpuCopy, GpuCopyWithOffsets, GpuDiv, GpuMul, GpuSub};
-#[cfg(not(any(target_arch = "spirv", target_arch = "nvptx64")))]
+#[cfg(not(target_arch_is_gpu))]
 pub use reduce::{ReduceAdd, ReduceMax, ReduceMin, ReduceMul, ReduceSqNorm};
-#[cfg(not(any(target_arch = "spirv", target_arch = "nvptx64")))]
+#[cfg(not(target_arch_is_gpu))]
 pub use repeat::Repeat;

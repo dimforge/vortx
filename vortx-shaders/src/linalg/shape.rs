@@ -9,7 +9,7 @@ use glamx::UVec4;
 #[repr(C)]
 #[derive(Clone, Copy)]
 #[cfg_attr(
-    not(any(target_arch = "spirv", target_arch = "nvptx64")),
+    not(target_arch_is_gpu),
     derive(bytemuck::Pod, bytemuck::Zeroable)
 )]
 pub struct Shape {
@@ -104,7 +104,7 @@ pub fn div_ceil4(a: u32) -> u32 {
 #[repr(C)]
 #[derive(Clone, Copy)]
 #[cfg_attr(
-    not(any(target_arch = "spirv", target_arch = "nvptx64")),
+    not(target_arch_is_gpu),
     derive(bytemuck::Pod, bytemuck::Zeroable)
 )]
 pub struct Shapes2 {
@@ -119,7 +119,7 @@ pub struct Shapes2 {
 #[repr(C)]
 #[derive(Clone, Copy)]
 #[cfg_attr(
-    not(any(target_arch = "spirv", target_arch = "nvptx64")),
+    not(target_arch_is_gpu),
     derive(bytemuck::Pod, bytemuck::Zeroable)
 )]
 pub struct Shapes3 {
@@ -136,7 +136,7 @@ pub struct Shapes3 {
 #[repr(C)]
 #[derive(Clone, Copy)]
 #[cfg_attr(
-    not(any(target_arch = "spirv", target_arch = "nvptx64")),
+    not(target_arch_is_gpu),
     derive(bytemuck::Pod, bytemuck::Zeroable)
 )]
 pub struct Shapes1 {
