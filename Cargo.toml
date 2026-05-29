@@ -25,7 +25,7 @@ push_constants = ["khal/push_constants", "vortx-shaders/push_constants"]
 subgroup_ops = ["khal/subgroup_ops", "vortx-shaders/subgroup_ops"]
 
 [workspace.package]
-version = "0.1.1"
+version = "0.2.0"
 
 [workspace.dependencies]
 khal-std = "0.2"
@@ -38,7 +38,7 @@ nalgebra = "0.35"
 khal = { workspace = true }
 khal-std = { workspace = true }
 # Shader crate provides both GPU shader code and generated ShaderArgs via spirv_bindgen
-vortx-shaders = { version = "0.1", path = "vortx-shaders" }
+vortx-shaders = { version = "0.2", path = "vortx-shaders" }
 
 [dev-dependencies]
 nalgebra = { version = "0.35", features = ["rand"] }
@@ -54,7 +54,7 @@ wgpu = "29"
 [build-dependencies]
 khal-builder = "0.2"
 # To build the shader from the dependency instead of local path.
-vortx-shaders = { version = "0.1.1", path = "./vortx-shaders" }
+vortx-shaders = { version = "0.2", path = "./vortx-shaders" }
 
 [patch.crates-io]
 #khal-builder = { path = "../khal/crates/khal-builder" }
