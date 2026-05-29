@@ -16,10 +16,7 @@ const MAX_NUM_THREADS: u32 = MAX_NUM_WORKGROUPS * WORKGROUP_SIZE;
 /// Binary operation offsets.
 #[repr(C)]
 #[derive(Clone, Copy)]
-#[cfg_attr(
-    not(any(target_arch = "spirv", target_arch = "nvptx64")),
-    derive(bytemuck::Pod, bytemuck::Zeroable)
-)]
+#[cfg_attr(not(target_arch_is_gpu), derive(bytemuck::Pod, bytemuck::Zeroable))]
 pub struct BinOpOffsets {
     pub a: u32,
     pub b: u32,

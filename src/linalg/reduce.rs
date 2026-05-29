@@ -218,6 +218,14 @@ mod test {
         gpu_reduce_generic(&cuda).await;
     }
 
+    #[cfg(feature = "metal")]
+    #[futures_test::test]
+    #[serial_test::serial]
+    async fn gpu_reduce_metal() {
+        let metal = GpuBackend::Metal(khal::backend::metal::Metal::new().unwrap());
+        gpu_reduce_generic(&metal).await;
+    }
+
     async fn gpu_reduce_generic(backend: &GpuBackend) {
         let ops = [
             ReduceVariant::Min,

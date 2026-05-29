@@ -8,7 +8,7 @@
 #![allow(clippy::too_many_arguments)]
 
 // Enable std on host for generated ShaderArgs structs (not on GPU targets).
-#[cfg(not(any(target_arch = "spirv", target_arch = "nvptx64")))]
+#[cfg(not(target_arch_is_gpu))]
 extern crate std;
 
 pub mod linalg;

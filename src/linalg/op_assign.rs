@@ -221,6 +221,14 @@ mod test {
         gpu_op_assign_with_backend(&cuda).await;
     }
 
+    #[cfg(feature = "metal")]
+    #[futures_test::test]
+    #[serial_test::serial]
+    async fn gpu_op_assign_metal() {
+        let metal = GpuBackend::Metal(khal::backend::metal::Metal::new().unwrap());
+        gpu_op_assign_with_backend(&metal).await;
+    }
+
     async fn gpu_op_assign_with_backend(backend: &GpuBackend) {
         let ops = [
             OpAssignVariant::Add,

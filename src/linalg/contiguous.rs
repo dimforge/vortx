@@ -151,6 +151,14 @@ mod test {
         gpu_contiguous_generic(&cuda).await;
     }
 
+    #[cfg(feature = "metal")]
+    #[futures_test::test]
+    #[serial_test::serial]
+    async fn gpu_contiguous_metal() {
+        let metal = GpuBackend::Metal(khal::backend::metal::Metal::new().unwrap());
+        gpu_contiguous_generic(&metal).await;
+    }
+
     async fn gpu_contiguous_generic(backend: &GpuBackend) {
         let contiguous = super::Contiguous::from_backend(backend).unwrap();
 

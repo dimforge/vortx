@@ -354,6 +354,14 @@ mod test {
         gpu_gemm_generic(&cuda).await;
     }
 
+    #[cfg(feature = "metal")]
+    #[futures_test::test]
+    #[serial_test::serial]
+    async fn gpu_gemm_metal() {
+        let metal = GpuBackend::Metal(khal::backend::metal::Metal::new().unwrap());
+        gpu_gemm_generic(&metal).await;
+    }
+
     async fn gpu_gemm_generic(backend: &GpuBackend) {
         let gemm = super::Gemm::from_backend(backend).unwrap();
 
