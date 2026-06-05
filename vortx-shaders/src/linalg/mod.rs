@@ -6,6 +6,7 @@ pub mod gemm;
 pub mod inv;
 pub mod op_assign;
 pub mod optim;
+pub mod ppo;
 pub mod reduce;
 pub mod repeat;
 pub mod shape;
@@ -25,6 +26,8 @@ pub use gemm::{GemmNaive, GemmTiled};
 pub use op_assign::{GpuAdd, GpuCopy, GpuCopyWithOffsets, GpuDiv, GpuMul, GpuSub};
 #[cfg(not(any(target_arch = "spirv", target_arch = "nvptx64")))]
 pub use optim::GpuAdam;
+#[cfg(not(any(target_arch = "spirv", target_arch = "nvptx64")))]
+pub use ppo::{GpuPpoActorGrad, GpuPpoValueGrad};
 #[cfg(not(any(target_arch = "spirv", target_arch = "nvptx64")))]
 pub use reduce::{ReduceAdd, ReduceMax, ReduceMin, ReduceMul, ReduceSqNorm};
 #[cfg(not(any(target_arch = "spirv", target_arch = "nvptx64")))]

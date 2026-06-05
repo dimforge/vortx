@@ -5,6 +5,7 @@ mod contiguous;
 mod gemm;
 mod op_assign;
 mod optim;
+mod ppo;
 mod reduce;
 mod repeat;
 
@@ -13,6 +14,7 @@ pub use contiguous::Contiguous;
 pub use gemm::{Gemm, MatrixMode, N, T};
 pub use op_assign::{BinOpOffsets, OpAssign, OpAssignVariant};
 pub use optim::{Adam, AdamParams};
+pub use ppo::{Ppo, PpoActorParams, PpoValueParams};
 pub use reduce::{Reduce, ReduceVariant};
 pub use repeat::Repeat;
 
