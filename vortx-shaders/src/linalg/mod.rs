@@ -16,7 +16,7 @@ pub use shape::{Shapes1, Shapes2, Shapes3};
 
 // Re-export generated ShaderArgs structs (only available on host)
 #[cfg(not(any(target_arch = "spirv", target_arch = "nvptx64")))]
-pub use activation::{GpuTanh, GpuTanhBackward};
+pub use activation::{GpuElu, GpuEluBackward, GpuEluVec4, GpuTanh, GpuTanhBackward};
 #[cfg(not(any(target_arch = "spirv", target_arch = "nvptx64")))]
 pub use contiguous::{Contiguous, ContiguousWithOffset};
 #[cfg(not(any(target_arch = "spirv", target_arch = "nvptx64")))]
