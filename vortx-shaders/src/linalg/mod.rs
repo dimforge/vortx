@@ -20,7 +20,7 @@ pub use activation::{GpuTanh, GpuTanhBackward};
 #[cfg(not(any(target_arch = "spirv", target_arch = "nvptx64")))]
 pub use contiguous::{Contiguous, ContiguousWithOffset};
 #[cfg(not(any(target_arch = "spirv", target_arch = "nvptx64")))]
-pub use gemm::{GemmNaive, GemmTiled};
+pub use gemm::{GemmNaive, GemmTiled, GemmTiledVec4};
 #[cfg(not(any(target_arch = "spirv", target_arch = "nvptx64")))]
 pub use op_assign::{GpuAdd, GpuCopy, GpuCopyWithOffsets, GpuDiv, GpuMul, GpuSub};
 #[cfg(not(any(target_arch = "spirv", target_arch = "nvptx64")))]
