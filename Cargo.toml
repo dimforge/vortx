@@ -29,8 +29,13 @@ unsafe_remove_boundchecks = []
 version = "0.3.0"
 
 [workspace.dependencies]
+<<<<<<< HEAD
 khal-std = "0.2"
 khal = { version = "0.2", features = ["derive"]}
+=======
+khal-std = { version = "0.1", default-features = false }
+khal = { version = "0.1", features = ["derive"]}
+>>>>>>> 28ae1be (vortx-shaders: build cleanly for the nvptx64 (cuda-oxide) device target)
 
 [dependencies]
 bytemuck = "1"
