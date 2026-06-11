@@ -30,7 +30,7 @@ pub fn contiguous(
     #[cfg(feature = "push_constants")]
     let shape_src = &shapes.shape;
 
-    contiguous_impl(invocation_id, shape_src, dest, src, &0)
+    contiguous_impl(invocation_id, shape_src, dest, src, 0)
 }
 
 /// Convert to contiguous row-major layout with offset.
@@ -51,7 +51,7 @@ pub fn contiguous_with_offset(
     #[cfg(feature = "push_constants")]
     let shape_src = &shapes.shape;
 
-    contiguous_impl(invocation_id, shape_src, dest, src, offset)
+    contiguous_impl(invocation_id, shape_src, dest, src, *offset)
 }
 
 #[inline(always)]
@@ -60,7 +60,7 @@ fn contiguous_impl(
     shape_src: &Shape,
     dest: &mut [u32],
     src: &[u32],
-    offset: &u32,
+    offset: u32,
 ) {
     for thread_id in (invocation_id.x..shape_src.len()).step_by(MAX_NUM_THREADS as usize) {
         // Compute the corresponding (i, j, k, l) indices for the out tensor.
