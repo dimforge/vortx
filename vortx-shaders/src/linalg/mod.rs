@@ -20,6 +20,6 @@ pub use gemm::{GemmNaive, GemmTiled};
 #[cfg(not(target_arch_is_gpu))]
 pub use op_assign::{GpuAdd, GpuCopy, GpuCopyWithOffsets, GpuDiv, GpuMul, GpuSub};
 #[cfg(not(target_arch_is_gpu))]
-pub use reduce::{ReduceAdd, ReduceMax, ReduceMin, ReduceMul, ReduceSqNorm};
+pub use reduce::*;
 #[cfg(not(target_arch_is_gpu))]
 pub use repeat::Repeat;
