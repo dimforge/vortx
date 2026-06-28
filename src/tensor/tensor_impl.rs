@@ -569,6 +569,14 @@ impl<T: DeviceValue + NoUninit> Tensor<T> {
 // }
 
 impl<T: DeviceValue> Tensor<T> {
+    /// Allocates an empty (len = 0) vector (rank = 1) with pre-allocated room for `capacity` elements.
+    pub fn with_capacity(backend: &GpuBackend, capacity: u32, usage: BufferUsages) -> Result<Self, GpuBackendError>
+    where T: DeviceValue + NoUninit {
+        let mut t = Self::vector_uninit(backend, capacity, usage)?;
+        t.shape = [0, 1, 1, 1];
+        Ok(t)
+    }
+
     /// Allocates a new uninitialized vector on the gpu for `len` elements of type `T`.
     ///
     /// # Safety
@@ -732,7 +740,7 @@ macro_rules! append_and_remove(
             range: impl RangeBounds<usize>,
         ) -> Result<usize, GpuBackendError>
         where T: $TraitBound {
-            assert_eq!(self.rank(), 1, "Remove is curretnly only supported on rank-1 tensors.");
+            assert_eq!(self.rank(), 1, "Remove is currently only supported on rank-1 tensors.");
             let dim_to_shrink = 0;
             let curr_len = self.shape[dim_to_shrink as usize] as usize;
             let range_start = match range.start_bound() {
