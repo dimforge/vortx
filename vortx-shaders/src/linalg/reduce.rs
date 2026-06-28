@@ -281,8 +281,13 @@ macro_rules! decl_reductions {
     };
 }
 
+// NOTE: not the actual max, but some platforms (like safari) don’t accept larger values.
+const MAX_F32: f32 = 1.0e18;
+// NOTE: not the actual max, but some platforms (like safari) don’t accept larger values.
+const MIN_F32: f32 = -1.0e18;
+
 decl_reductions!(
-    f32, 0.0, 1.0, f32::MIN, f32::MAX;
+    f32, 0.0, 1.0, MIN_F32, MAX_F32;
     reduce_add_f32, reduce_mul_f32, reduce_min_f32, reduce_max_f32
 );
 decl_reductions!(
