@@ -23,6 +23,7 @@ cuda = ["khal/cuda", "khal-builder/cuda", "vortx-shaders/cuda"]
 metal = ["khal/metal"]
 push_constants = ["khal/push_constants", "vortx-shaders/push_constants"]
 subgroup_ops = ["khal/subgroup_ops", "vortx-shaders/subgroup_ops"]
+unsafe_remove_boundchecks = []
 
 [workspace.package]
 version = "0.2.0"

@@ -9,6 +9,7 @@ use khal_std::{
     index::MaybeIndexUnchecked,
     macros::{spirv, spirv_bindgen},
 };
+use crate::utils::iterators::StepRng;
 
 const WORKGROUP_SIZE: u32 = 128;
 const MAX_NUM_THREADS: u32 = MAX_NUM_WORKGROUPS * WORKGROUP_SIZE;
@@ -62,7 +63,7 @@ fn contiguous_impl(
     src: &[u32],
     offset: u32,
 ) {
-    for thread_id in (invocation_id.x..shape_src.len()).step_by(MAX_NUM_THREADS as usize) {
+    for thread_id in StepRng::new(invocation_id.x..shape_src.len(), MAX_NUM_THREADS) {
         // Compute the corresponding (i, j, k, l) indices for the out tensor.
         // A contiguous row-major tensor with dimensions [n,c,h,w] has strides
         // [c * h * w, h * w, w, 1]

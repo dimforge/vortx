@@ -9,6 +9,7 @@ use khal_std::{
     index::MaybeIndexUnchecked,
     macros::{spirv, spirv_bindgen},
 };
+use crate::utils::iterators::StepRng;
 
 #[cfg(feature = "subgroup_ops")]
 const WORKGROUP_SIZE: usize = 32;
@@ -41,7 +42,7 @@ macro_rules! decl_reductions {
             let thread_id = local_id.x as usize;
             workspace.write(thread_id, $zero);
 
-            for i in (thread_id as u32..shape.w).step_by(WORKGROUP_SIZE) {
+            for i in StepRng::new(thread_id as u32..shape.w, WORKGROUP_SIZE as u32) {
                 // TODO: support tensors that are not just vectors.
                 //       We'd reduce along the last dimension only, and use the
                 //       workgroup_id to compute on each axis in parallel.
@@ -99,7 +100,7 @@ macro_rules! decl_reductions {
             let thread_id = local_id.x as usize;
             workspace.write(thread_id, $one);
 
-            for i in (thread_id as u32..shape.w).step_by(WORKGROUP_SIZE) {
+            for i in StepRng::new(thread_id as u32..shape.w, WORKGROUP_SIZE as u32) {
                 // TODO: support tensors that are not just vectors.
                 //       We'd reduce along the last dimension only, and use the
                 //       workgroup_id to compute on each axis in parallel.
@@ -158,7 +159,7 @@ macro_rules! decl_reductions {
             let thread_id = local_id.x as usize;
             workspace.write(thread_id, $max);
 
-            for i in (thread_id as u32..shape.w).step_by(WORKGROUP_SIZE) {
+            for i in StepRng::new(thread_id as u32..shape.w, WORKGROUP_SIZE as u32) {
                 // TODO: support tensors that are not just vectors.
                 //       We'd reduce along the last dimension only, and use the
                 //       workgroup_id to compute on each axis in parallel.
@@ -229,7 +230,7 @@ macro_rules! decl_reductions {
             let thread_id = local_id.x as usize;
             workspace.write(thread_id, $min);
 
-            for i in (thread_id as u32..shape.w).step_by(WORKGROUP_SIZE) {
+            for i in StepRng::new(thread_id as u32..shape.w, WORKGROUP_SIZE as u32) {
                 // TODO: support tensors that are not just vectors.
                 //       We'd reduce along the last dimension only, and use the
                 //       workgroup_id to compute on each axis in parallel.
@@ -321,7 +322,7 @@ pub fn reduce_sq_norm(
     let thread_id = local_id.x as usize;
     workspace.write(thread_id, 0.0);
 
-    for i in (thread_id as u32..shape.w).step_by(WORKGROUP_SIZE) {
+    for i in StepRng::new(thread_id as u32..shape.w, WORKGROUP_SIZE as u32) {
         // TODO: support tensors that are not just vectors.
         //       We'd reduce along the last dimension only, and use the
         //       workgroup_id to compute on each axis in parallel.

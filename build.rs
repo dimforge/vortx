@@ -10,6 +10,10 @@ fn main() {
 
     #[allow(unused_mut)]
     let mut builder = KhalBuilder::from_dependency("vortx-shaders", true);
+    #[cfg(feature = "unsafe_remove_boundchecks")]
+    {
+        builder = builder.feature("unsafe_remove_boundchecks");
+    }
     #[cfg(feature = "push_constants")]
     {
         builder = builder.feature("push_constants");
