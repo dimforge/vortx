@@ -1,21 +1,20 @@
 //! Reduction operations for tensors (sum, product, min, max, squared norm).
 
-use core::ops::{Add, Mul};
 use super::shape::Shape;
 #[cfg(feature = "push_constants")]
 use super::shape::Shapes1;
+use crate::utils::iterators::StepRng;
+use core::ops::{Add, Mul};
 use glamx::UVec3;
 use khal_std::{
     index::MaybeIndexUnchecked,
     macros::{spirv, spirv_bindgen},
 };
-use crate::utils::iterators::StepRng;
 
 #[cfg(feature = "subgroup_ops")]
 const WORKGROUP_SIZE: usize = 32;
 #[cfg(not(feature = "subgroup_ops"))]
 const WORKGROUP_SIZE: usize = 128;
-
 
 macro_rules! decl_reductions {
     ($T: ty, $zero: expr, $one: expr, $min: expr, $max: expr;
@@ -175,7 +174,11 @@ macro_rules! decl_reductions {
             #[cfg(not(feature = "subgroup_ops"))]
             {
                 #[inline]
-                fn reduce_workspace_min(thread_id: usize, stride: usize, workspace: &mut [$T; WORKGROUP_SIZE]) {
+                fn reduce_workspace_min(
+                    thread_id: usize,
+                    stride: usize,
+                    workspace: &mut [$T; WORKGROUP_SIZE],
+                ) {
                     if thread_id < stride {
                         workspace.write(
                             thread_id,
@@ -247,7 +250,11 @@ macro_rules! decl_reductions {
             #[cfg(not(feature = "subgroup_ops"))]
             {
                 #[inline]
-                fn reduce_workspace_max(thread_id: usize, stride: usize, workspace: &mut [$T; WORKGROUP_SIZE]) {
+                fn reduce_workspace_max(
+                    thread_id: usize,
+                    stride: usize,
+                    workspace: &mut [$T; WORKGROUP_SIZE],
+                ) {
                     if thread_id < stride {
                         workspace.write(
                             thread_id,
@@ -361,7 +368,9 @@ pub fn reduce_sq_norm(
 
 #[inline]
 fn reduce_workspace_sum<T>(thread_id: usize, stride: usize, workspace: &mut [T; WORKGROUP_SIZE])
-where T: Copy + Add<T, Output = T> {
+where
+    T: Copy + Add<T, Output = T>,
+{
     if thread_id < stride {
         workspace.write(
             thread_id,
@@ -373,7 +382,9 @@ where T: Copy + Add<T, Output = T> {
 
 #[inline]
 fn reduce_workspace_mul<T>(thread_id: usize, stride: usize, workspace: &mut [T; WORKGROUP_SIZE])
-where T: Copy + Mul<T, Output = T> {
+where
+    T: Copy + Mul<T, Output = T>,
+{
     if thread_id < stride {
         workspace.write(
             thread_id,

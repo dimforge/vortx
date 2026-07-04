@@ -570,8 +570,14 @@ impl<T: DeviceValue + NoUninit> Tensor<T> {
 
 impl<T: DeviceValue> Tensor<T> {
     /// Allocates an empty (len = 0) vector (rank = 1) with pre-allocated room for `capacity` elements.
-    pub fn with_capacity(backend: &GpuBackend, capacity: u32, usage: BufferUsages) -> Result<Self, GpuBackendError>
-    where T: DeviceValue + NoUninit {
+    pub fn with_capacity(
+        backend: &GpuBackend,
+        capacity: u32,
+        usage: BufferUsages,
+    ) -> Result<Self, GpuBackendError>
+    where
+        T: DeviceValue + NoUninit,
+    {
         let mut t = Self::vector_uninit(backend, capacity, usage)?;
         t.shape = [0, 1, 1, 1];
         Ok(t)

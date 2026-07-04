@@ -3,13 +3,13 @@
 use super::shape::Shape;
 #[cfg(feature = "push_constants")]
 use super::shape::Shapes1;
+use crate::utils::iterators::StepRng;
 use crate::utils::limits::MAX_NUM_WORKGROUPS;
 use glamx::UVec3;
 use khal_std::{
     index::MaybeIndexUnchecked,
     macros::{spirv, spirv_bindgen},
 };
-use crate::utils::iterators::StepRng;
 
 const WORKGROUP_SIZE: u32 = 128;
 const MAX_NUM_THREADS: u32 = MAX_NUM_WORKGROUPS * WORKGROUP_SIZE;

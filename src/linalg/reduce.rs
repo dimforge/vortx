@@ -3,10 +3,11 @@ use crate::tensor::{AsTensorMut, AsTensorRef};
 use khal::Shader;
 use khal::backend::{GpuBackend, GpuBackendError, GpuPass};
 
-use crate::shaders::linalg::{ReduceAddF32, ReduceMaxF32, ReduceMinF32, ReduceMulF32,
-                             ReduceAddU32, ReduceMaxU32, ReduceMinU32, ReduceMulU32,
-                             ReduceAddI32, ReduceMaxI32, ReduceMinI32, ReduceMulI32,
-                             ReduceSqNorm};
+use crate::shaders::linalg::{
+    ReduceAddF32, ReduceAddI32, ReduceAddU32, ReduceMaxF32, ReduceMaxI32, ReduceMaxU32,
+    ReduceMinF32, ReduceMinI32, ReduceMinU32, ReduceMulF32, ReduceMulI32, ReduceMulU32,
+    ReduceSqNorm,
+};
 
 #[cfg(test)]
 use nalgebra::DVector;
