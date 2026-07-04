@@ -3,7 +3,11 @@ use crate::tensor::{AsTensorMut, AsTensorRef};
 use khal::Shader;
 use khal::backend::{GpuBackend, GpuBackendError, GpuPass};
 
-use crate::shaders::linalg::{ReduceAdd, ReduceMax, ReduceMin, ReduceMul, ReduceSqNorm};
+use crate::shaders::linalg::{
+    ReduceAddF32, ReduceAddI32, ReduceAddU32, ReduceMaxF32, ReduceMaxI32, ReduceMaxU32,
+    ReduceMinF32, ReduceMinI32, ReduceMinU32, ReduceMulF32, ReduceMulI32, ReduceMulU32,
+    ReduceSqNorm,
+};
 
 #[cfg(test)]
 use nalgebra::DVector;
@@ -40,14 +44,30 @@ impl ReduceVariant {
 /// A GPU kernel for performing the operation described by [`ReduceVariant`].
 #[derive(Shader)]
 pub struct Reduce {
-    /// Kernel for computing the sum of every element of a tensor.
-    pub reduce_sum: ReduceAdd,
-    /// Kernel for computing the product of every element of a tensor.
-    pub reduce_product: ReduceMul,
-    /// Kernel for computing the minimum element of a tensor.
-    pub reduce_min: ReduceMin,
-    /// Kernel for computing the maximum element of a tensor.
-    pub reduce_max: ReduceMax,
+    /// Kernel for computing the sum of every element of a f32 tensor.
+    pub reduce_sum_f32: ReduceAddF32,
+    /// Kernel for computing the product of every element of a f32 tensor.
+    pub reduce_product_f32: ReduceMulF32,
+    /// Kernel for computing the minimum element of a f32 tensor.
+    pub reduce_min_f32: ReduceMinF32,
+    /// Kernel for computing the maximum element of a f32 tensor.
+    pub reduce_max_f32: ReduceMaxF32,
+    /// Kernel for computing the sum of every element of a u32 tensor.
+    pub reduce_sum_u32: ReduceAddU32,
+    /// Kernel for computing the product of every element of a u32 tensor.
+    pub reduce_product_u32: ReduceMulU32,
+    /// Kernel for computing the minimum element of a u32 tensor.
+    pub reduce_min_u32: ReduceMinU32,
+    /// Kernel for computing the maximum element of a u32 tensor.
+    pub reduce_max_u32: ReduceMaxU32,
+    /// Kernel for computing the sum of every element of a i32 tensor.
+    pub reduce_sum_i32: ReduceAddI32,
+    /// Kernel for computing the product of every element of a i32 tensor.
+    pub reduce_product_i32: ReduceMulI32,
+    /// Kernel for computing the minimum element of a i32 tensor.
+    pub reduce_min_i32: ReduceMinI32,
+    /// Kernel for computing the maximum element of a i32 tensor.
+    pub reduce_max_i32: ReduceMaxI32,
     /// Kernel for computing the squared norm of a tensor.
     pub reduce_sqnorm: ReduceSqNorm,
 }
@@ -148,10 +168,10 @@ impl Reduce {
                     );
 
                     match variant {
-                        ReduceVariant::Sum => call!(self.reduce_sum),
-                        ReduceVariant::Prod => call!(self.reduce_product),
-                        ReduceVariant::Min => call!(self.reduce_min),
-                        ReduceVariant::Max => call!(self.reduce_max),
+                        ReduceVariant::Sum => call!(self.reduce_sum_f32),
+                        ReduceVariant::Prod => call!(self.reduce_product_f32),
+                        ReduceVariant::Min => call!(self.reduce_min_f32),
+                        ReduceVariant::Max => call!(self.reduce_max_f32),
                         ReduceVariant::SqNorm => call!(self.reduce_sqnorm),
                     }
                 }

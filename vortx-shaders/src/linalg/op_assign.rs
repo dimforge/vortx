@@ -3,6 +3,7 @@
 use super::shape::Shape;
 #[cfg(feature = "push_constants")]
 use super::shape::Shapes2;
+use crate::utils::iterators::StepRng;
 use crate::utils::limits::MAX_NUM_WORKGROUPS;
 use glamx::UVec3;
 use khal_std::{
@@ -44,7 +45,7 @@ pub fn gpu_add(
     #[cfg(feature = "push_constants")]
     let (shape_a, shape_b) = (&shapes.shape_a, &shapes.shape_b);
 
-    for thread_id in (invocation_id.x..shape_a.len()).step_by(MAX_NUM_THREADS as usize) {
+    for thread_id in StepRng::new(invocation_id.x..shape_a.len(), MAX_NUM_THREADS) {
         let id = shape_a.decompose(thread_id);
         let ia = shape_a.it_vec(id) as usize;
         let ib = shape_b.it_vec(id) as usize;
@@ -72,7 +73,7 @@ pub fn gpu_sub(
     #[cfg(feature = "push_constants")]
     let (shape_a, shape_b) = (&shapes.shape_a, &shapes.shape_b);
 
-    for thread_id in (invocation_id.x..shape_a.len()).step_by(MAX_NUM_THREADS as usize) {
+    for thread_id in StepRng::new(invocation_id.x..shape_a.len(), MAX_NUM_THREADS) {
         let id = shape_a.decompose(thread_id);
         let ia = shape_a.it_vec(id) as usize;
         let ib = shape_b.it_vec(id) as usize;
@@ -100,7 +101,7 @@ pub fn gpu_mul(
     #[cfg(feature = "push_constants")]
     let (shape_a, shape_b) = (&shapes.shape_a, &shapes.shape_b);
 
-    for thread_id in (invocation_id.x..shape_a.len()).step_by(MAX_NUM_THREADS as usize) {
+    for thread_id in StepRng::new(invocation_id.x..shape_a.len(), MAX_NUM_THREADS) {
         let id = shape_a.decompose(thread_id);
         let ia = shape_a.it_vec(id) as usize;
         let ib = shape_b.it_vec(id) as usize;
@@ -128,7 +129,7 @@ pub fn gpu_div(
     #[cfg(feature = "push_constants")]
     let (shape_a, shape_b) = (&shapes.shape_a, &shapes.shape_b);
 
-    for thread_id in (invocation_id.x..shape_a.len()).step_by(MAX_NUM_THREADS as usize) {
+    for thread_id in StepRng::new(invocation_id.x..shape_a.len(), MAX_NUM_THREADS) {
         let id = shape_a.decompose(thread_id);
         let ia = shape_a.it_vec(id) as usize;
         let ib = shape_b.it_vec(id) as usize;
@@ -156,7 +157,7 @@ pub fn gpu_copy(
     #[cfg(feature = "push_constants")]
     let (shape_a, shape_b) = (&shapes.shape_a, &shapes.shape_b);
 
-    for thread_id in (invocation_id.x..shape_a.len()).step_by(MAX_NUM_THREADS as usize) {
+    for thread_id in StepRng::new(invocation_id.x..shape_a.len(), MAX_NUM_THREADS) {
         let id = shape_a.decompose(thread_id);
         let ia = shape_a.it_vec(id) as usize;
         let ib = shape_b.it_vec(id) as usize;
@@ -177,7 +178,7 @@ pub fn gpu_copy_with_offsets(
     #[spirv(storage_buffer, descriptor_set = 0, binding = 3)] a: &mut [f32],
     #[spirv(storage_buffer, descriptor_set = 0, binding = 4)] b: &[f32],
 ) {
-    for thread_id in (invocation_id.x..shape_a.len()).step_by(MAX_NUM_THREADS as usize) {
+    for thread_id in StepRng::new(invocation_id.x..shape_a.len(), MAX_NUM_THREADS) {
         let id = shape_a.decompose(thread_id);
         let ia = shape_a.it_vec(id);
         let ib = shape_b.it_vec(id);

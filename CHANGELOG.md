@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- Integer reductions: `sum`/`product`/`min`/`max` now have dedicated `u32` and `i32` kernels in addition to `f32`.
+- `Tensor::with_capacity` to allocate an empty (len 0) rank-1 tensor with preallocated room for `capacity` elements.
+- New `unsafe_remove_boundchecks` feature to compile shaders without bounds checks.
+
+### Fixed
+
+- Replaced `(a..b).step_by(c)` with a custom `StepRng` iterator in the reduce, `op_assign`, and `contiguous` kernels: the standard combinator introduces non-uniform control flow that breaks workgroup barriers when targeting WebGPU in the browser.
+
 ## v0.2.0
 
 ### Added
