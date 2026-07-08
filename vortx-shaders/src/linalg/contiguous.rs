@@ -3,7 +3,6 @@
 use super::shape::Shape;
 #[cfg(feature = "push_constants")]
 use super::shape::Shapes1;
-use crate::utils::iterators::StepRng;
 use crate::utils::limits::MAX_NUM_WORKGROUPS;
 use glamx::UVec3;
 use khal_std::{
@@ -63,7 +62,7 @@ fn contiguous_impl(
     src: &[u32],
     offset: u32,
 ) {
-    for thread_id in StepRng::new(invocation_id.x..shape_src.len(), MAX_NUM_THREADS) {
+    for thread_id in (invocation_id.x..shape_src.len()).step_by(MAX_NUM_THREADS as usize) {
         // Compute the corresponding (i, j, k, l) indices for the out tensor.
         // A contiguous row-major tensor with dimensions [n,c,h,w] has strides
         // [c * h * w, h * w, w, 1]

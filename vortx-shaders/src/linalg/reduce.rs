@@ -3,7 +3,6 @@
 use super::shape::Shape;
 #[cfg(feature = "push_constants")]
 use super::shape::Shapes1;
-use crate::utils::iterators::StepRng;
 use core::ops::{Add, Mul};
 use glamx::UVec3;
 use khal_std::{
@@ -41,7 +40,7 @@ macro_rules! decl_reductions {
             let thread_id = local_id.x as usize;
             workspace.write(thread_id, $zero);
 
-            for i in StepRng::new(thread_id as u32..shape.w, WORKGROUP_SIZE as u32) {
+            for i in (thread_id as u32..shape.w).step_by(WORKGROUP_SIZE) {
                 // TODO: support tensors that are not just vectors.
                 //       We'd reduce along the last dimension only, and use the
                 //       workgroup_id to compute on each axis in parallel.
@@ -99,7 +98,7 @@ macro_rules! decl_reductions {
             let thread_id = local_id.x as usize;
             workspace.write(thread_id, $one);
 
-            for i in StepRng::new(thread_id as u32..shape.w, WORKGROUP_SIZE as u32) {
+            for i in (thread_id as u32..shape.w).step_by(WORKGROUP_SIZE) {
                 // TODO: support tensors that are not just vectors.
                 //       We'd reduce along the last dimension only, and use the
                 //       workgroup_id to compute on each axis in parallel.
@@ -158,7 +157,7 @@ macro_rules! decl_reductions {
             let thread_id = local_id.x as usize;
             workspace.write(thread_id, $max);
 
-            for i in StepRng::new(thread_id as u32..shape.w, WORKGROUP_SIZE as u32) {
+            for i in (thread_id as u32..shape.w).step_by(WORKGROUP_SIZE) {
                 // TODO: support tensors that are not just vectors.
                 //       We'd reduce along the last dimension only, and use the
                 //       workgroup_id to compute on each axis in parallel.
@@ -173,11 +172,11 @@ macro_rules! decl_reductions {
 
             #[cfg(not(feature = "subgroup_ops"))]
             {
-                #[inline]
+                #[inline(always)]
                 fn reduce_workspace_min(
                     thread_id: usize,
                     stride: usize,
-                    workspace: &mut [$T; WORKGROUP_SIZE],
+                    workspace: &mut impl MaybeIndexUnchecked<$T>,
                 ) {
                     if thread_id < stride {
                         workspace.write(
@@ -233,7 +232,7 @@ macro_rules! decl_reductions {
             let thread_id = local_id.x as usize;
             workspace.write(thread_id, $min);
 
-            for i in StepRng::new(thread_id as u32..shape.w, WORKGROUP_SIZE as u32) {
+            for i in (thread_id as u32..shape.w).step_by(WORKGROUP_SIZE) {
                 // TODO: support tensors that are not just vectors.
                 //       We'd reduce along the last dimension only, and use the
                 //       workgroup_id to compute on each axis in parallel.
@@ -249,11 +248,11 @@ macro_rules! decl_reductions {
 
             #[cfg(not(feature = "subgroup_ops"))]
             {
-                #[inline]
+                #[inline(always)]
                 fn reduce_workspace_max(
                     thread_id: usize,
                     stride: usize,
-                    workspace: &mut [$T; WORKGROUP_SIZE],
+                    workspace: &mut impl MaybeIndexUnchecked<$T>,
                 ) {
                     if thread_id < stride {
                         workspace.write(
@@ -329,7 +328,7 @@ pub fn reduce_sq_norm(
     let thread_id = local_id.x as usize;
     workspace.write(thread_id, 0.0);
 
-    for i in StepRng::new(thread_id as u32..shape.w, WORKGROUP_SIZE as u32) {
+    for i in (thread_id as u32..shape.w).step_by(WORKGROUP_SIZE) {
         // TODO: support tensors that are not just vectors.
         //       We'd reduce along the last dimension only, and use the
         //       workgroup_id to compute on each axis in parallel.
@@ -366,8 +365,8 @@ pub fn reduce_sq_norm(
     }
 }
 
-#[inline]
-fn reduce_workspace_sum<T>(thread_id: usize, stride: usize, workspace: &mut [T; WORKGROUP_SIZE])
+#[inline(always)]
+fn reduce_workspace_sum<T>(thread_id: usize, stride: usize, workspace: &mut impl MaybeIndexUnchecked<T>)
 where
     T: Copy + Add<T, Output = T>,
 {
@@ -380,8 +379,8 @@ where
     khal_std::sync::workgroup_memory_barrier_with_group_sync();
 }
 
-#[inline]
-fn reduce_workspace_mul<T>(thread_id: usize, stride: usize, workspace: &mut [T; WORKGROUP_SIZE])
+#[inline(always)]
+fn reduce_workspace_mul<T>(thread_id: usize, stride: usize, workspace: &mut impl MaybeIndexUnchecked<T>)
 where
     T: Copy + Mul<T, Output = T>,
 {
