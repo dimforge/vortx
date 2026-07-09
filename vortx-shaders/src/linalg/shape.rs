@@ -8,7 +8,10 @@ use glamx::UVec4;
 /// (Samples, Channels, Height, Width), where height is the row count, and width the column count.
 #[repr(C)]
 #[derive(Clone, Copy)]
-#[cfg_attr(not(target_arch_is_gpu), derive(bytemuck::Pod, bytemuck::Zeroable))]
+#[cfg_attr(
+    not(any(target_arch = "spirv", target_arch = "nvptx64")),
+    derive(bytemuck::Pod, bytemuck::Zeroable)
+)]
 pub struct Shape {
     /// Number of rows in each matrix of the tensor.
     pub n: u32,
@@ -100,7 +103,10 @@ pub fn div_ceil4(a: u32) -> u32 {
 #[cfg(feature = "push_constants")]
 #[repr(C)]
 #[derive(Clone, Copy)]
-#[cfg_attr(not(target_arch_is_gpu), derive(bytemuck::Pod, bytemuck::Zeroable))]
+#[cfg_attr(
+    not(any(target_arch = "spirv", target_arch = "nvptx64")),
+    derive(bytemuck::Pod, bytemuck::Zeroable)
+)]
 pub struct Shapes2 {
     /// First shape (typically output or left operand).
     pub shape_a: Shape,
@@ -112,7 +118,10 @@ pub struct Shapes2 {
 #[cfg(feature = "push_constants")]
 #[repr(C)]
 #[derive(Clone, Copy)]
-#[cfg_attr(not(target_arch_is_gpu), derive(bytemuck::Pod, bytemuck::Zeroable))]
+#[cfg_attr(
+    not(any(target_arch = "spirv", target_arch = "nvptx64")),
+    derive(bytemuck::Pod, bytemuck::Zeroable)
+)]
 pub struct Shapes3 {
     /// Output shape.
     pub shape_out: Shape,
@@ -126,7 +135,10 @@ pub struct Shapes3 {
 #[cfg(feature = "push_constants")]
 #[repr(C)]
 #[derive(Clone, Copy)]
-#[cfg_attr(not(target_arch_is_gpu), derive(bytemuck::Pod, bytemuck::Zeroable))]
+#[cfg_attr(
+    not(any(target_arch = "spirv", target_arch = "nvptx64")),
+    derive(bytemuck::Pod, bytemuck::Zeroable)
+)]
 pub struct Shapes1 {
     /// The shape.
     pub shape: Shape,
