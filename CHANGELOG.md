@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.4.0
+
+### Changed
+
+- Update to `khal`/`khal-std`/`khal-builder` 0.3.
+- Update to `wgpu` 30.0.
+
+
 ## v0.3.0
 
 ### Added
