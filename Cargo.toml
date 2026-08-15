@@ -29,8 +29,8 @@ unsafe_remove_boundchecks = []
 version = "0.3.0"
 
 [workspace.dependencies]
-khal-std = "0.2"
-khal = { version = "0.2", features = ["derive"]}
+khal-std = "0.3"
+khal = { version = "0.3", features = ["derive"]}
 
 [dependencies]
 bytemuck = "1"
@@ -50,10 +50,10 @@ async-std = { version = "1", features = ["attributes"] }
 plotly = "0.12.1"
 indexmap = "2"
 anyhow = "1"
-wgpu = "29"
+wgpu = "30"
 
 [build-dependencies]
-khal-builder = "0.2"
+khal-builder = "0.3"
 # To build the shader from the dependency instead of local path.
 vortx-shaders = { version = "0.3", path = "./vortx-shaders" }
 
