@@ -16,3 +16,5 @@ pub use linalg::*;
 pub mod linalg;
 pub mod shapes;
 pub mod tensor;
+#[cfg(feature = "ml")]
+pub mod ml;

@@ -117,3 +117,4 @@ jobs:
       - name: Run Cargo Tests
         run: |
           LIBGL_ALWAYS_SOFTWARE=1 cargo test --verbose -p vortx --features cpu
+          LIBGL_ALWAYS_SOFTWARE=1 cargo test --verbose -p vortx --features cpu,ml,rand

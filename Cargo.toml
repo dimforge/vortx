@@ -24,6 +24,8 @@ metal = ["khal/metal"]
 push_constants = ["khal/push_constants", "vortx-shaders/push_constants"]
 subgroup_ops = ["khal/subgroup_ops", "vortx-shaders/subgroup_ops"]
 unsafe_remove_boundchecks = []
+# Enables machine-learning (llm inference, reinforcement learning, etc.) operators.
+ml = ["vortx-shaders/ml"]
 
 [workspace.package]
 version = "0.4.0"
@@ -40,6 +42,7 @@ khal = { workspace = true }
 khal-std = { workspace = true }
 # Shader crate provides both GPU shader code and generated ShaderArgs via spirv_bindgen
 vortx-shaders = { version = "0.4", path = "vortx-shaders" }
+rand = { version = "0.10", optional = true }
 
 [dev-dependencies]
 nalgebra = { version = "0.35", features = ["rand"] }

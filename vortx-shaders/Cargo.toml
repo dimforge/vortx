@@ -22,6 +22,8 @@ subgroup_ops = []
 cpu = ["khal-std/cpu", "khal/cpu"]
 cpu-parallel = ["cpu", "khal-std/cpu-parallel"]
 cuda = ["khal-std/cuda", "khal/cuda"]
+# Enables machine-learning (llm inference, reinforcement learning, etc.) operators.
+ml = []
 
 [dependencies]
 khal-std = { workspace = true }
