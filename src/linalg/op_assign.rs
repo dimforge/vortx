@@ -69,7 +69,7 @@ impl OpAssign {
         shape_a = shape_a.canonicalize();
         shape_b = shape_b.canonicalize();
 
-        let num_threads = a.len() as u32;
+        let num_threads = (a.len() as u32).min(vortx_shaders::linalg::op_assign::MAX_NUM_THREADS);
 
         #[cfg(not(feature = "push_constants"))]
         {
@@ -169,7 +169,7 @@ impl OpAssign {
         shape_a = shape_a.canonicalize();
         shape_b = shape_b.canonicalize();
 
-        let num_threads = a.len() as u32;
+        let num_threads = (a.len() as u32).min(vortx_shaders::linalg::op_assign::MAX_NUM_THREADS);
 
         // copy_with_offsets doesn't use push_constants for shapes
         shapes.insert(backend, shape_a)?;

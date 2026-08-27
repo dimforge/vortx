@@ -1,0 +1,68 @@
+//! Backward passes of the element-wise activations.
+//!
+//! The forward directions live in [`crate::ml::unary`] (`UnaryOp::Tanh`,
+//! `UnaryOp::Elu`); only the gradients are provided here, for training.
+
+use crate::linalg::Shape;
+use crate::utils::iterators::StepRng;
+use crate::utils::limits::MAX_NUM_WORKGROUPS;
+use khal_std::glamx::UVec3;
+use khal_std::index::MaybeIndexUnchecked;
+use khal_std::macros::{spirv, spirv_bindgen};
+
+const WORKGROUP_SIZE: u32 = 256;
+/// Largest dispatch these kernels accept: they stride by exactly this, so a host
+/// dispatch must be clamped to it (fewer threads leave a gap in the stride, more
+/// overruns the 65535-workgroup limit).
+pub const MAX_NUM_THREADS: u32 = MAX_NUM_WORKGROUPS * WORKGROUP_SIZE;
+
+// Guards `WORKGROUP_SIZE` against the `threads(...)` attribute it duplicates.
+#[cfg(not(target_arch_is_gpu))]
+static_assertions::const_assert_eq!(
+    WORKGROUP_SIZE,
+    <GpuTanhBackwardArgs<'static> as khal::shader::ShaderArgsType>::WORKGROUP_SIZE[0]
+);
+
+/// Backward of tanh, in place: `g *= 1 - y*y`, where `y = tanh(x)` is the forward output.
+///
+/// `g` and `y` must have the same shape.
+#[spirv_bindgen]
+#[spirv(compute(threads(256, 1, 1)))]
+pub fn gpu_tanh_backward(
+    #[spirv(global_invocation_id)] invocation_id: UVec3,
+    #[spirv(uniform, descriptor_set = 0, binding = 0)] shape_g: &Shape,
+    #[spirv(uniform, descriptor_set = 0, binding = 1)] shape_y: &Shape,
+    #[spirv(storage_buffer, descriptor_set = 0, binding = 2)] g: &mut [f32],
+    #[spirv(storage_buffer, descriptor_set = 0, binding = 3)] y: &[f32],
+) {
+    for thread_id in StepRng::new(invocation_id.x..shape_g.len(), MAX_NUM_THREADS) {
+        let id = shape_g.decompose(thread_id);
+        let ig = shape_g.it_vec(id) as usize;
+        let iy = shape_y.it_vec(id) as usize;
+        let yi = y.read(iy);
+        *g.at_mut(ig) *= 1.0 - yi * yi;
+    }
+}
+
+/// Backward of ELU (alpha = 1), in place: `g *= 1 if y > 0 else y + 1`, where
+/// `y = elu(x)` is the cached forward output.
+///
+/// Valid because `elu'(x) = 1` for `x > 0` and `exp(x) = elu(x) + 1` for `x <= 0`,
+/// and `y > 0 <=> x > 0`.
+#[spirv_bindgen]
+#[spirv(compute(threads(256, 1, 1)))]
+pub fn gpu_elu_backward(
+    #[spirv(global_invocation_id)] invocation_id: UVec3,
+    #[spirv(uniform, descriptor_set = 0, binding = 0)] shape_g: &Shape,
+    #[spirv(uniform, descriptor_set = 0, binding = 1)] shape_y: &Shape,
+    #[spirv(storage_buffer, descriptor_set = 0, binding = 2)] g: &mut [f32],
+    #[spirv(storage_buffer, descriptor_set = 0, binding = 3)] y: &[f32],
+) {
+    for thread_id in StepRng::new(invocation_id.x..shape_g.len(), MAX_NUM_THREADS) {
+        let id = shape_g.decompose(thread_id);
+        let ig = shape_g.it_vec(id) as usize;
+        let iy = shape_y.it_vec(id) as usize;
+        let yi = y.read(iy);
+        *g.at_mut(ig) *= if yi > 0.0 { 1.0 } else { yi + 1.0 };
+    }
+}

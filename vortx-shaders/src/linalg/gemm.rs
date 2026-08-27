@@ -5,7 +5,7 @@
 use super::shape::Shape;
 #[cfg(feature = "push_constants")]
 use super::shape::Shapes3;
-use glamx::UVec3;
+use glamx::{UVec3, Vec4};
 use khal_std::{
     index::MaybeIndexUnchecked,
     macros::{spirv, spirv_bindgen},
@@ -78,14 +78,14 @@ pub fn gemm_tiled(
     let m = shape_out.h;
     let n = shape_out.w;
     let k = shape_lhs.w;
-    let mut acc: [f32; 16];
+    // Register accumulator: 4 rows, each a vec4 of the thread's 4 output columns.
+    let mut acc: [Vec4; 4];
 
     // Process batch dimension
     for batch in 0..shape_out.n {
         let batch_c = wg_id.z % shape_out.c;
 
-        // Register accumulator for 4x4 outputs per thread
-        acc = [0.0; 16];
+        acc = [Vec4::ZERO; 4];
 
         // Loop over K dimension in tiles
         let mut k_tile: u32 = 0;
@@ -141,27 +141,17 @@ pub fn gemm_tiled(
                 let a2 = smem_a.read(((a_row_base + 2) * SMEM_A_STRIDE + kk) as usize);
                 let a3 = smem_a.read(((a_row_base + 3) * SMEM_A_STRIDE + kk) as usize);
 
-                let b0 = smem_b.read((kk * SMEM_B_STRIDE + b_col_base) as usize);
-                let b1 = smem_b.read((kk * SMEM_B_STRIDE + b_col_base + 1) as usize);
-                let b2 = smem_b.read((kk * SMEM_B_STRIDE + b_col_base + 2) as usize);
-                let b3 = smem_b.read((kk * SMEM_B_STRIDE + b_col_base + 3) as usize);
-
-                acc[0] += a0 * b0;
-                acc[1] += a0 * b1;
-                acc[2] += a0 * b2;
-                acc[3] += a0 * b3;
-                acc[4] += a1 * b0;
-                acc[5] += a1 * b1;
-                acc[6] += a1 * b2;
-                acc[7] += a1 * b3;
-                acc[8] += a2 * b0;
-                acc[9] += a2 * b1;
-                acc[10] += a2 * b2;
-                acc[11] += a2 * b3;
-                acc[12] += a3 * b0;
-                acc[13] += a3 * b1;
-                acc[14] += a3 * b2;
-                acc[15] += a3 * b3;
+                // 4 contiguous B columns as a vec4; 4-wide FMA per A row.
+                let bvec = Vec4::new(
+                    smem_b.read((kk * SMEM_B_STRIDE + b_col_base) as usize),
+                    smem_b.read((kk * SMEM_B_STRIDE + b_col_base + 1) as usize),
+                    smem_b.read((kk * SMEM_B_STRIDE + b_col_base + 2) as usize),
+                    smem_b.read((kk * SMEM_B_STRIDE + b_col_base + 3) as usize),
+                );
+                acc[0] = bvec.mul_add(Vec4::splat(a0), acc[0]);
+                acc[1] = bvec.mul_add(Vec4::splat(a1), acc[1]);
+                acc[2] = bvec.mul_add(Vec4::splat(a2), acc[2]);
+                acc[3] = bvec.mul_add(Vec4::splat(a3), acc[3]);
 
                 kk += 1;
             }
@@ -178,12 +168,13 @@ pub fn gemm_tiled(
         while i < THREAD_M {
             let row = out_row + i;
             if row < m {
+                let arr = acc[i as usize].to_array();
                 let mut j: u32 = 0;
                 while j < THREAD_N {
                     let col = out_col + j;
                     if col < n {
                         let idx = shape_out.it(batch, batch_c, row, col) as usize;
-                        out.write(idx, acc[(i * THREAD_N + j) as usize]);
+                        out.write(idx, arr[j as usize]);
                     }
                     j += 1;
                 }

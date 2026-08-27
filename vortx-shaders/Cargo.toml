@@ -22,6 +22,8 @@ subgroup_ops = []
 cpu = ["khal-std/cpu", "khal/cpu"]
 cpu-parallel = ["cpu", "khal-std/cpu-parallel"]
 cuda = ["khal-std/cuda", "khal/cuda"]
+# Enables machine-learning (llm inference, reinforcement learning, etc.) operators.
+ml = []
 
 [dependencies]
 khal-std = { workspace = true }
@@ -35,3 +37,4 @@ khal-std = { workspace = true }
 [target.'cfg(not(any(target_arch = "spirv", target_arch = "nvptx64")))'.dependencies]
 khal = { workspace = true }
 bytemuck = { version = "1", features = ["derive"] }
+static_assertions = "1"

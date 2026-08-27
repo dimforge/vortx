@@ -12,7 +12,17 @@ use khal_std::{
 };
 
 const WORKGROUP_SIZE: u32 = 128;
-const MAX_NUM_THREADS: u32 = MAX_NUM_WORKGROUPS * WORKGROUP_SIZE;
+/// Largest dispatch these kernels accept: they stride by exactly this, so a host
+/// dispatch must be clamped to it (fewer threads leave a gap in the stride, more
+/// overruns the 65535-workgroup limit).
+pub const MAX_NUM_THREADS: u32 = MAX_NUM_WORKGROUPS * WORKGROUP_SIZE;
+
+// Guards `WORKGROUP_SIZE` against the `threads(...)` attribute it duplicates.
+#[cfg(not(target_arch_is_gpu))]
+static_assertions::const_assert_eq!(
+    WORKGROUP_SIZE,
+    <ContiguousArgs<'static> as khal::shader::ShaderArgsType>::WORKGROUP_SIZE[0]
+);
 
 /// Convert to contiguous row-major layout.
 #[spirv_bindgen]

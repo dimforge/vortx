@@ -12,4 +12,6 @@
 extern crate std;
 
 pub mod linalg;
+#[cfg(feature = "ml")]
+pub mod ml;
 pub mod utils;

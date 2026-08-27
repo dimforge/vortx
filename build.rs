@@ -18,5 +18,9 @@ fn main() {
     {
         builder = builder.feature("push_constants");
     }
+    #[cfg(feature = "ml")]
+    {
+        builder = builder.feature("ml");
+    }
     builder.build(&output_dir);
 }

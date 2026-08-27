@@ -14,5 +14,7 @@ pub static SPIRV_DIR: Dir<'static> = include_dir!("$OUT_DIR/shaders-spirv");
 pub use linalg::*;
 
 pub mod linalg;
+#[cfg(feature = "ml")]
+pub mod ml;
 pub mod shapes;
 pub mod tensor;
