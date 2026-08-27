@@ -1,8 +1,8 @@
-use khal::backend::{DispatchGrid, GpuBackend, GpuBackendError, GpuPass};
-use khal::Shader;
-use nalgebra::DVector;
 use crate::shapes::TensorLayoutBuffers;
 use crate::tensor::{AsTensorMut, AsTensorRef};
+use khal::Shader;
+use khal::backend::{DispatchGrid, GpuBackend, GpuBackendError, GpuPass};
+use nalgebra::DVector;
 
 #[derive(Shader)]
 /// Shader implementing the layer normalization kernel.
@@ -144,12 +144,12 @@ impl LayerNorm {
 #[cfg(test)]
 mod test {
     use crate::ml::LayerNorm;
+    use crate::shapes::TensorLayoutBuffers;
+    use crate::tensor::Tensor;
     use khal::backend::WebGpu;
     use khal::backend::{Backend, Encoder, GpuBackend};
     use khal::{BufferUsages, Shader};
     use nalgebra::DVector;
-    use crate::shapes::TensorLayoutBuffers;
-    use crate::tensor::Tensor;
     use wgpu::{Features, Limits};
 
     #[futures_test::test]

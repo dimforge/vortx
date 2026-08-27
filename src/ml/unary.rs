@@ -1,9 +1,9 @@
-use khal_std::glamx::Vec4;
-use khal::backend::{GpuBackend, GpuBackendError, GpuPass};
-use khal::Shader;
-use nalgebra::{Dyn, StorageMut, Vector};
 use crate::shapes::TensorLayoutBuffers;
 use crate::tensor::{AsTensorMut, AsTensorRef, Tensor};
+use khal::Shader;
+use khal::backend::{GpuBackend, GpuBackendError, GpuPass};
+use khal_std::glamx::Vec4;
+use nalgebra::{Dyn, StorageMut, Vector};
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 #[non_exhaustive]
@@ -930,13 +930,13 @@ impl Unary {
 #[cfg(feature = "rand")]
 mod test {
     use crate::ml::UnaryOp;
-    use khal_std::glamx::Vec4;
+    use crate::shapes::TensorLayoutBuffers;
+    use crate::tensor::Tensor;
     use khal::backend::WebGpu;
     use khal::backend::{Backend, Encoder, GpuBackend};
     use khal::{BufferUsages, Shader};
+    use khal_std::glamx::Vec4;
     use nalgebra::DVector;
-    use crate::shapes::TensorLayoutBuffers;
-    use crate::tensor::Tensor;
     use wgpu::{Features, Limits};
 
     #[futures_test::test]

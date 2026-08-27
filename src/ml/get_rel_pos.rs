@@ -1,7 +1,7 @@
-use khal::backend::{GpuBackend, GpuBackendError, GpuPass};
-use khal::Shader;
 use crate::shapes::TensorLayoutBuffers;
 use crate::tensor::{AsTensorMut, AsTensorRef};
+use khal::Shader;
+use khal::backend::{GpuBackend, GpuBackendError, GpuPass};
 
 #[derive(Shader)]
 pub struct GetRelPos {

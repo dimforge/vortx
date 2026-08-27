@@ -2,9 +2,9 @@
 //!
 //! This implementation works with ONNX tensor format directly.
 
-use khal::backend::{GpuBackendError, GpuBuffer, GpuPass};
-use khal::Shader;
 use crate::tensor::{AsTensorMut, AsTensorRef};
+use khal::Shader;
+use khal::backend::{GpuBackendError, GpuBuffer, GpuPass};
 
 #[derive(Shader)]
 pub struct Conv2dNchw {

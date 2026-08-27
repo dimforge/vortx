@@ -1,9 +1,9 @@
 //! Gather operation: gathers elements from a tensor based on indices along an axis.
 
-use khal::backend::{GpuBackend, GpuBackendError, GpuPass};
-use khal::{BufferUsages, Shader};
 use crate::shapes::TensorLayoutBuffers;
 use crate::tensor::{AsTensorMut, AsTensorRef, TensorBuilder};
+use khal::backend::{GpuBackend, GpuBackendError, GpuPass};
+use khal::{BufferUsages, Shader};
 
 /// Shader for the Gather operation.
 #[derive(Shader)]

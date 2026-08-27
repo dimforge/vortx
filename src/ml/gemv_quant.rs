@@ -1,10 +1,10 @@
+use crate::Gemm;
 use crate::ml::quantization::{BlockQ4K, BlockQ5K, BlockQ8K};
 use crate::ml::quantized_matrix::GpuQuantTensor;
-use khal::backend::{DispatchGrid, GpuBackend, GpuBackendError, GpuPass};
-use khal::Shader;
 use crate::shapes::TensorLayoutBuffers;
 use crate::tensor::{AsTensorMut, AsTensorRef};
-use crate::Gemm;
+use khal::Shader;
+use khal::backend::{DispatchGrid, GpuBackend, GpuBackendError, GpuPass};
 
 #[cfg(feature = "rand")]
 use rand::distr::{Distribution, StandardUniform};
@@ -351,17 +351,17 @@ mod test {
     use super::*;
     use crate::ml::quantization::*;
     use crate::ml::quantized_matrix::GpuQuantTensor;
-    use khal::backend::{Backend, Encoder, GpuBackend, WebGpu};
-    use khal::BufferUsages;
     use crate::shapes::TensorLayoutBuffers;
     use crate::tensor::Tensor;
+    use khal::BufferUsages;
+    use khal::backend::{Backend, Encoder, GpuBackend, WebGpu};
     use wgpu::{Features, Limits};
 
     /// Generate a random valid f16 scale (avoids NaN/Inf).
     /// Includes subnormal values to cover the full f16 range.
     fn rand_f16_scale() -> u16 {
         let val: f32 = rand::random::<f32>() * 2.0 - 1.0; // [-1, 1]
-                                                          // Scale down ~25% of values into the subnormal f16 range (< 2^-14).
+        // Scale down ~25% of values into the subnormal f16 range (< 2^-14).
         let val = if rand::random::<u8>() < 64 {
             val * 1e-5
         } else {

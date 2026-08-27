@@ -1,8 +1,8 @@
-use khal::backend::{GpuBackend, GpuBackendError, GpuPass};
-use khal::Shader;
-use nalgebra::{DVector, Dyn, Storage, Vector};
 use crate::shapes::TensorLayoutBuffers;
 use crate::tensor::{AsTensorMut, AsTensorRef, Tensor};
+use khal::Shader;
+use khal::backend::{GpuBackend, GpuBackendError, GpuPass};
+use nalgebra::{DVector, Dyn, Storage, Vector};
 
 #[derive(Shader)]
 /// Shader implementing the RMS norm kernel.
@@ -82,12 +82,12 @@ impl RmsNorm {
 #[cfg(test)]
 mod test {
     use crate::ml::{RmsNorm, RmsNormConfig};
+    use crate::shapes::TensorLayoutBuffers;
+    use crate::tensor::Tensor;
     use khal::backend::WebGpu;
     use khal::backend::{Backend, Encoder, GpuBackend};
     use khal::{BufferUsages, Shader};
     use nalgebra::DVector;
-    use crate::shapes::TensorLayoutBuffers;
-    use crate::tensor::Tensor;
     use wgpu::{Features, Limits};
 
     #[futures_test::test]

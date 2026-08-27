@@ -421,11 +421,7 @@ pub fn decode_f16(half: u16) -> f32 {
     } else {
         f32::NAN
     };
-    if half & 0x8000 != 0 {
-        -val
-    } else {
-        val
-    }
+    if half & 0x8000 != 0 { -val } else { val }
 }
 
 pub fn decode_bf16(half: u16) -> f32 {

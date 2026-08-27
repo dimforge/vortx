@@ -2,13 +2,13 @@
 //!
 //! BlockQ4K: super-block scale, super-block min, 12 bytes scales/mins, 128 bytes quants (256 4-bit values).
 
+use crate::linalg::Shape;
+#[cfg(feature = "push_constants")]
+use crate::linalg::Shapes1;
 use crate::utils::half::unpack_half2x16;
 use khal_std::glamx::{UVec2, UVec3, Vec4};
 use khal_std::index::MaybeIndexUnchecked;
 use khal_std::macros::{spirv, spirv_bindgen};
-use crate::linalg::Shape;
-#[cfg(feature = "push_constants")]
-use crate::linalg::Shapes1;
 
 const WORKGROUP_SIZE: usize = 32;
 // BlockQ4K size in u32s: 1 (d_dmin) + 3 (scales) + 32 (qs) = 36

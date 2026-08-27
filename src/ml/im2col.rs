@@ -1,7 +1,6 @@
-use khal::backend::{Backend, DispatchGrid, GpuBackend, GpuBackendError, GpuPass};
-use khal::Shader;
 use crate::tensor::{AsTensorMut, AsTensorRef, Tensor};
-
+use khal::Shader;
+use khal::backend::{Backend, DispatchGrid, GpuBackend, GpuBackendError, GpuPass};
 
 pub type Im2ColConfig = vortx_shaders::ml::im2col::Im2ColParams;
 

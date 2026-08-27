@@ -1,12 +1,12 @@
 use crate::ml::{
-    GpuBlockQ4K, GpuBlockQ4_0x2, GpuBlockQ4_1x2, GpuBlockQ5K, GpuBlockQ5_0x2, GpuBlockQ5_1x2,
-    GpuBlockQ6Kx2, GpuBlockQ8K, GpuBlockQ8_0x2,
+    GpuBlockQ4_0x2, GpuBlockQ4_1x2, GpuBlockQ4K, GpuBlockQ5_0x2, GpuBlockQ5_1x2, GpuBlockQ5K,
+    GpuBlockQ6Kx2, GpuBlockQ8_0x2, GpuBlockQ8K,
 };
-use khal::backend::{GpuDispatch, ShaderBinding};
-use khal::shader::ShaderArgsError;
-use khal::ShaderArgs;
 use crate::shapes::TensorLayout;
 use crate::tensor::Tensor;
+use khal::ShaderArgs;
+use khal::backend::{GpuDispatch, ShaderBinding};
+use khal::shader::ShaderArgsError;
 
 pub enum GpuQuantTensor {
     F32(Tensor<f32>),

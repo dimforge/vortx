@@ -2,13 +2,13 @@
 //!
 //! BlockQ5_1x2 contains two BlockQ5_1 blocks (f16 scale + f16 min + u32 high bits + 16 x 4-bit quants each).
 
+use crate::linalg::Shape;
+#[cfg(feature = "push_constants")]
+use crate::linalg::Shapes1;
 use crate::utils::half::unpack_half2x16;
 use khal_std::glamx::{UVec3, Vec2, Vec4};
 use khal_std::index::MaybeIndexUnchecked;
 use khal_std::macros::{spirv, spirv_bindgen};
-use crate::linalg::Shape;
-#[cfg(feature = "push_constants")]
-use crate::linalg::Shapes1;
 
 const WORKGROUP_SIZE: u32 = 64;
 

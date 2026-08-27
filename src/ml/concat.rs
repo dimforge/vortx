@@ -1,9 +1,9 @@
 //! Concat operation: concatenates tensors along a given axis.
 
-use khal::backend::{GpuBackend, GpuBackendError, GpuPass};
-use khal::{BufferUsages, Shader};
 use crate::shapes::TensorLayoutBuffers;
 use crate::tensor::{AsTensorMut, AsTensorRef, TensorBuilder};
+use khal::backend::{GpuBackend, GpuBackendError, GpuPass};
+use khal::{BufferUsages, Shader};
 
 /// Shader for the Concat operation.
 #[derive(Shader)]

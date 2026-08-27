@@ -1,11 +1,11 @@
 //! Select operation: selects elements from a source tensor based on indices.
 
-use khal_std::glamx::UVec3;
-use khal_std::index::MaybeIndexUnchecked;
-use khal_std::macros::{spirv, spirv_bindgen};
 use crate::linalg::Shape;
 #[cfg(feature = "push_constants")]
 use crate::linalg::Shapes2;
+use khal_std::glamx::UVec3;
+use khal_std::index::MaybeIndexUnchecked;
+use khal_std::macros::{spirv, spirv_bindgen};
 
 /// Select elements from source based on indices and write to destination.
 ///

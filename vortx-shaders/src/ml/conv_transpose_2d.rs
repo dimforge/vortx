@@ -1,11 +1,11 @@
 //! Transposed 2D convolution.
 
-use khal_std::glamx::UVec3;
-use khal_std::index::MaybeIndexUnchecked;
-use khal_std::macros::{spirv, spirv_bindgen};
 use crate::linalg::Shape;
 #[cfg(feature = "push_constants")]
 use crate::linalg::{Shapes1, Shapes2, Shapes3};
+use khal_std::glamx::UVec3;
+use khal_std::index::MaybeIndexUnchecked;
+use khal_std::macros::{spirv, spirv_bindgen};
 
 const WORKGROUP_SIZE: u32 = 64;
 

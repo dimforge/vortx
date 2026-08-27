@@ -1,8 +1,8 @@
 //! 2D Pooling operations (MaxPool2d, AvgPool2d, GlobalAvgPool2d, GlobalMaxPool2d).
 
-use khal::backend::{GpuBackendError, GpuBuffer, GpuPass};
-use khal::Shader;
 use crate::tensor::{AsTensorMut, AsTensorRef};
+use khal::Shader;
+use khal::backend::{GpuBackendError, GpuBuffer, GpuPass};
 
 /// Pool2d configuration parameters.
 #[derive(Copy, Clone, PartialEq, Eq, bytemuck::Pod, bytemuck::Zeroable, Debug, Default)]

@@ -1,9 +1,9 @@
 //! Axis-based reduction operations (ReduceSum, ReduceMean, etc.)
 
-use khal::backend::{GpuBackend, GpuBackendError, GpuPass};
-use khal::{BufferUsages, Shader};
 use crate::shapes::TensorLayoutBuffers;
 use crate::tensor::{AsTensorMut, AsTensorRef, TensorBuilder};
+use khal::backend::{GpuBackend, GpuBackendError, GpuPass};
+use khal::{BufferUsages, Shader};
 
 /// Type of reduction operation.
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
@@ -103,10 +103,10 @@ impl ReduceAxis {
 #[cfg(test)]
 mod test {
     use super::*;
-    use khal::backend::{Backend, Encoder, GpuBackend, WebGpu};
-    use khal::{BufferUsages, Shader};
     use crate::shapes::TensorLayoutBuffers;
     use crate::tensor::Tensor;
+    use khal::backend::{Backend, Encoder, GpuBackend, WebGpu};
+    use khal::{BufferUsages, Shader};
     use wgpu::{Features, Limits};
 
     async fn test_reduce_sum_axis_generic(backend: &GpuBackend) {

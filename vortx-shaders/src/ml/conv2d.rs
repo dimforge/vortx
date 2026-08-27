@@ -22,10 +22,10 @@
 //! \[14\] batch_size
 //! \[15\] groups (must be 1 for now)
 
+use crate::utils::limits::MAX_NUM_WORKGROUPS;
 use khal_std::glamx::UVec3;
 use khal_std::index::MaybeIndexUnchecked;
 use khal_std::macros::{spirv, spirv_bindgen};
-use crate::utils::limits::MAX_NUM_WORKGROUPS;
 
 const WORKGROUP_SIZE: u32 = 64;
 const MAX_NUM_THREADS: u32 = MAX_NUM_WORKGROUPS * WORKGROUP_SIZE;

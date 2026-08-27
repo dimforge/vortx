@@ -1,9 +1,9 @@
-use vortx_shaders::ml::AttentionParams;
-use khal::backend::{GpuBackend, GpuBackendError, GpuPass};
-use khal::Shader;
-use nalgebra::{DMatrix, DVector};
-use crate::tensor::{AsTensorMut, AsTensorRef};
 use crate::ml::SoftMax;
+use crate::tensor::{AsTensorMut, AsTensorRef};
+use khal::Shader;
+use khal::backend::{GpuBackend, GpuBackendError, GpuPass};
+use nalgebra::{DMatrix, DVector};
+use vortx_shaders::ml::AttentionParams;
 
 #[derive(Shader)]
 /// Fused attention shader - combines Q*K^T, scale, mask, softmax, and *V into one kernel.

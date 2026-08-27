@@ -1,15 +1,15 @@
 //! Unary operations for tensors.
 
-use khal_std::glamx::{UVec3, Vec4};
-use khal_std::index::MaybeIndexUnchecked;
-use khal_std::macros::{spirv, spirv_bindgen};
-#[cfg(any(target_arch = "spirv", target_arch = "nvptx64"))]
-use khal_std::num_traits::Float;
 use crate::linalg::Shape;
 #[cfg(feature = "push_constants")]
 use crate::linalg::{Shapes1, Shapes2};
 use crate::utils::limits::MAX_NUM_WORKGROUPS;
 use crate::utils::trig::stable_tanh;
+use khal_std::glamx::{UVec3, Vec4};
+use khal_std::index::MaybeIndexUnchecked;
+use khal_std::macros::{spirv, spirv_bindgen};
+#[cfg(any(target_arch = "spirv", target_arch = "nvptx64"))]
+use khal_std::num_traits::Float;
 
 const WORKGROUP_SIZE: u32 = 64;
 const MAX_NUM_THREADS: u32 = MAX_NUM_WORKGROUPS * WORKGROUP_SIZE;

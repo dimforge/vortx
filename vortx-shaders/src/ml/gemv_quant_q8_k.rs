@@ -2,13 +2,13 @@
 //!
 //! BlockQ8K: f32 delta, 256 x 8-bit signed quants, 16 x 16-bit bsums.
 
+use crate::linalg::Shape;
+#[cfg(feature = "push_constants")]
+use crate::linalg::Shapes1;
 use crate::utils::half::unpack_int4x8;
 use khal_std::glamx::{UVec3, Vec4};
 use khal_std::index::MaybeIndexUnchecked;
 use khal_std::macros::{spirv, spirv_bindgen};
-use crate::linalg::Shape;
-#[cfg(feature = "push_constants")]
-use crate::linalg::Shapes1;
 
 const WORKGROUP_SIZE: u32 = 32;
 

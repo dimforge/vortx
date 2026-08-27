@@ -1,13 +1,13 @@
 //! RMS normalization kernel.
 
+use crate::linalg::Shape;
+#[cfg(feature = "push_constants")]
+use crate::linalg::Shapes3;
 use khal_std::glamx::UVec3;
 use khal_std::index::MaybeIndexUnchecked;
 use khal_std::macros::{spirv, spirv_bindgen};
 #[cfg(any(target_arch = "spirv", target_arch = "nvptx64"))]
 use khal_std::num_traits::Float;
-use crate::linalg::Shape;
-#[cfg(feature = "push_constants")]
-use crate::linalg::Shapes3;
 
 #[cfg(feature = "subgroup_ops")]
 const WORKGROUP_SIZE: usize = 32;

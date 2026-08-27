@@ -1,7 +1,7 @@
-use khal::backend::{GpuBackend, GpuBackendError, GpuPass};
-use khal::Shader;
 use crate::shapes::TensorLayoutBuffers;
 use crate::tensor::{AsTensorMut, AsTensorRef};
+use khal::Shader;
+use khal::backend::{GpuBackend, GpuBackendError, GpuPass};
 
 #[derive(Shader)]
 pub struct Select {
@@ -66,10 +66,10 @@ impl Select {
 
 #[cfg(test)]
 mod test {
-    use khal::backend::{Backend, Encoder, GpuBackend, WebGpu};
-    use khal::{BufferUsages, Shader};
     use crate::shapes::TensorLayoutBuffers;
     use crate::tensor::Tensor;
+    use khal::backend::{Backend, Encoder, GpuBackend, WebGpu};
+    use khal::{BufferUsages, Shader};
     use wgpu::{Features, Limits};
 
     /// Select rows from a matrix by index: dest[i] = src[idx[i], :].

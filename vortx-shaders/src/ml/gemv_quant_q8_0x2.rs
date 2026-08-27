@@ -2,13 +2,13 @@
 //!
 //! BlockQ8_0x2 contains two BlockQ8_0 blocks (f16 scale + 32 x 8-bit signed quants each).
 
+use crate::linalg::Shape;
+#[cfg(feature = "push_constants")]
+use crate::linalg::Shapes1;
 use crate::utils::half::{unpack_half2x16, unpack_int4x8};
 use khal_std::glamx::{UVec3, Vec4};
 use khal_std::index::MaybeIndexUnchecked;
 use khal_std::macros::{spirv, spirv_bindgen};
-use crate::linalg::Shape;
-#[cfg(feature = "push_constants")]
-use crate::linalg::Shapes1;
 
 const WORKGROUP_SIZE: usize = 32;
 const BLOCK_Q8_0X2_SIZE: u32 = 17; // 17 u32s

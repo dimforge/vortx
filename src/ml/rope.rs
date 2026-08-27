@@ -1,8 +1,8 @@
-use khal::backend::{GpuBackend, GpuBackendError, GpuPass};
-use khal::Shader;
-use nalgebra::{vector, DVector, DVectorViewMut, Rotation2};
 use crate::shapes::TensorLayoutBuffers;
 use crate::tensor::{AsTensorMut, Tensor};
+use khal::Shader;
+use khal::backend::{GpuBackend, GpuBackendError, GpuPass};
+use nalgebra::{DVector, DVectorViewMut, Rotation2, vector};
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum RoPEVariant {
@@ -139,12 +139,12 @@ impl RoPE {
 mod test {
     use super::RoPEConfig;
     use crate::ml::{RoPE, RoPEVariant};
+    use crate::shapes::TensorLayoutBuffers;
+    use crate::tensor::Tensor;
     use khal::backend::WebGpu;
     use khal::backend::{Backend, Encoder, GpuBackend};
     use khal::{BufferUsages, Shader};
     use nalgebra::DVector;
-    use crate::shapes::TensorLayoutBuffers;
-    use crate::tensor::Tensor;
     use wgpu::{Features, Limits};
 
     #[futures_test::test]

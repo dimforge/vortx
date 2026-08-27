@@ -3,13 +3,13 @@
 //! BlockQ6Kx2 contains two BlockQ6K blocks packed together (105 u32s total).
 //! Each BlockQ6K: f16 scale, 64 bytes ql (low 4 bits), 32 bytes qh (high 2 bits), 16 bytes scales.
 
+use crate::linalg::Shape;
+#[cfg(feature = "push_constants")]
+use crate::linalg::Shapes1;
 use crate::utils::half::{unpack_half2x16, unpack_int4x8, unpack_uint4x8};
 use khal_std::glamx::{IVec4, Mat4, UVec3, UVec4, Vec4};
 use khal_std::index::MaybeIndexUnchecked;
 use khal_std::macros::{spirv, spirv_bindgen};
-use crate::linalg::Shape;
-#[cfg(feature = "push_constants")]
-use crate::linalg::Shapes1;
 
 const WORKGROUP_SIZE: usize = 32;
 // BlockQ6Kx2 size in u32s: 105
