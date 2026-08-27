@@ -5,13 +5,13 @@
 //! `Shape` uniform or `TensorLayoutBuffers`: dimensions ride in the params
 //! struct and indexing is row-major.
 
-use crate::shaders::ml::{GpuPpoActorGrad, GpuPpoValueGrad};
+use crate::shaders::ml::{GpuPpoActorGrad, GpuPpoStageBatch, GpuPpoValueGrad};
 use crate::tensor::{AsTensorMut, AsTensorRef};
 use khal::Shader;
 use khal::backend::{GpuBackendError, GpuPass};
 
 // Re-export the params structs from the shader crate.
-pub use vortx_shaders::ml::ppo::{PpoActorParams, PpoValueParams};
+pub use vortx_shaders::ml::ppo::{PpoActorParams, PpoStageParams, PpoValueParams};
 
 /// PPO loss-gradient kernels.
 #[derive(Shader)]
@@ -20,6 +20,8 @@ pub struct Ppo {
     pub actor_grad: GpuPpoActorGrad,
     /// Clipped value-loss gradient.
     pub value_grad: GpuPpoValueGrad,
+    /// On-device staging of the PPO minibatch from raw rollout observations.
+    pub stage_batch: GpuPpoStageBatch,
 }
 
 impl Ppo {
@@ -48,7 +50,8 @@ impl Ppo {
         let mut g_mean = g_mean.as_tensor_mut();
         let mut g_logstd = g_logstd.as_tensor_mut();
 
-        let num_threads = adv.len() as u32; // one thread per sample column
+        // One thread per sample column, clamped to the kernel's stride.
+        let num_threads = (adv.len() as u32).min(vortx_shaders::ml::ppo::MAX_NUM_THREADS);
         let mut buf_g_mean = g_mean.buffer_mut();
         let mut buf_g_logstd = g_logstd.buffer_mut();
 
@@ -83,7 +86,7 @@ impl Ppo {
         let ret = ret.as_tensor_ref();
         let mut g_v = g_v.as_tensor_mut();
 
-        let num_threads = v_pred.len() as u32;
+        let num_threads = (v_pred.len() as u32).min(vortx_shaders::ml::ppo::MAX_NUM_THREADS);
         let mut buf_g_v = g_v.buffer_mut();
 
         self.value_grad.call(
@@ -94,6 +97,52 @@ impl Ppo {
             &value_old.buffer(),
             &ret.buffer(),
             &mut buf_g_v,
+        )
+    }
+
+    /// Stages (one half of) the PPO batch on device: reads the step-blocked raw
+    /// rollout observations, applies the signed-perm mirror, the normalizer
+    /// affine and the ±5 clamp, and writes row-major `[dim x total_cols]`
+    /// columns starting at `params.col_offset`.
+    ///
+    /// `mean` / `inv_std` / `perm` / `sign` are all `[dim]`; pass identity
+    /// tables in `perm` / `sign` for the un-mirrored half. See
+    /// [`gpu_ppo_stage_batch`](vortx_shaders::ml::ppo::gpu_ppo_stage_batch) for
+    /// the layout contract.
+    #[allow(clippy::too_many_arguments)]
+    pub fn stage_batch(
+        &self,
+        pass: &mut GpuPass,
+        params: impl AsTensorRef<PpoStageParams>,
+        raw: impl AsTensorRef<f32>,
+        mean: impl AsTensorRef<f32>,
+        inv_std: impl AsTensorRef<f32>,
+        perm: impl AsTensorRef<u32>,
+        sign: impl AsTensorRef<f32>,
+        mut out: impl AsTensorMut<f32>,
+        cols: u32,
+        dim: u32,
+    ) -> Result<(), GpuBackendError> {
+        let params = params.as_tensor_ref();
+        let raw = raw.as_tensor_ref();
+        let mean = mean.as_tensor_ref();
+        let inv_std = inv_std.as_tensor_ref();
+        let perm = perm.as_tensor_ref();
+        let sign = sign.as_tensor_ref();
+        let mut out = out.as_tensor_mut();
+
+        let mut buf_out = out.buffer_mut();
+
+        self.stage_batch.call(
+            pass,
+            [cols, dim, 1],
+            &params.buffer(),
+            &raw.buffer(),
+            &mean.buffer(),
+            &inv_std.buffer(),
+            &perm.buffer(),
+            &sign.buffer(),
+            &mut buf_out,
         )
     }
 }

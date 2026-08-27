@@ -39,7 +39,7 @@ impl Adam {
         let mut v = v.as_tensor_mut();
 
         let shape = theta.layout().canonicalize();
-        let num_threads = theta.len() as u32;
+        let num_threads = (theta.len() as u32).min(vortx_shaders::ml::optim::MAX_NUM_THREADS);
 
         shapes.insert(backend, shape)?;
         let shape_buf = shapes.get(shape).unwrap();

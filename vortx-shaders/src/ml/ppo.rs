@@ -18,7 +18,11 @@ use khal_std::{
 };
 
 const WORKGROUP_SIZE: u32 = 256;
-const MAX_NUM_THREADS: u32 = MAX_NUM_WORKGROUPS * WORKGROUP_SIZE;
+/// Largest dispatch these kernels accept. They stride by exactly this,
+/// so a host dispatch must be clamped to it: dispatching fewer threads
+/// would leave a gap in the stride, and more would overrun the
+/// 65535-workgroup limit.
+pub const MAX_NUM_THREADS: u32 = MAX_NUM_WORKGROUPS * WORKGROUP_SIZE;
 
 /// Scalar parameters for the actor PPO gradient (uniform buffer; 32 bytes).
 #[repr(C)]
@@ -159,4 +163,81 @@ pub fn gpu_ppo_value_grad(
         };
         *g_v.at_mut(m) = params.value_coef * dv * scale;
     }
+}
+
+/// Scalar parameters for the PPO batch staging (uniform buffer; 32 bytes).
+#[repr(C)]
+#[derive(Clone, Copy)]
+#[cfg_attr(not(target_arch_is_gpu), derive(bytemuck::Pod, bytemuck::Zeroable))]
+pub struct PpoStageParams {
+    /// Observation dimensionality (rows).
+    pub dim: u32,
+    /// Environments per rollout step.
+    pub n: u32,
+    /// Rollout steps `T`; the raw buffer is step-blocked `[T][dim][n]`.
+    pub steps: u32,
+    /// Total batch columns of `out` (its row stride).
+    pub total_cols: u32,
+    /// First output column this dispatch writes (the mirrored or the original
+    /// half of the batch).
+    pub col_offset: u32,
+    /// 0 = batch mode: the columns cover all `T·n` samples, env-major.
+    /// Otherwise single-step mode, staging only rollout step `step_select - 1`,
+    /// so the columns are the `n` envs (the per-step policy-input staging).
+    pub step_select: u32,
+    pub pad1: u32,
+    pub pad2: u32,
+}
+
+/// Builds (one half of) the `[dim x total_cols]` row-major PPO batch straight
+/// from the step-blocked raw rollout observations, applying the signed-perm
+/// mirror, the normalizer affine and the ±5 clamp in one dispatch.
+///
+/// The mirror arrives as an explicit signed permutation (`perm`/`sign`, with
+/// identity tables for the un-mirrored half) rather than re-derived index
+/// maths, so it cannot drift from the caller's definition. Normalization
+/// happens here, not before: the mirror is defined on raw observations
+/// (`normalize ∘ mirror`) and the clamp is lossy, so a mirror taken from
+/// already-normalized values is wrong for every saturated feature.
+///
+/// Batch columns are env-major (`col = e·T + t`, the trainer's sample flatten
+/// order) while the raw buffer is step-blocked, hence the
+/// `raw[(t·dim + perm[d])·n + e]` gather. Dispatch `[cols, dim, 1]` threads.
+#[spirv_bindgen]
+#[spirv(compute(threads(256, 1, 1)))]
+pub fn gpu_ppo_stage_batch(
+    #[spirv(global_invocation_id)] invocation_id: UVec3,
+    #[spirv(uniform, descriptor_set = 0, binding = 0)] params: &PpoStageParams,
+    #[spirv(storage_buffer, descriptor_set = 0, binding = 1)] raw: &[f32],
+    #[spirv(storage_buffer, descriptor_set = 0, binding = 2)] mean: &[f32],
+    #[spirv(storage_buffer, descriptor_set = 0, binding = 3)] inv_std: &[f32],
+    #[spirv(storage_buffer, descriptor_set = 0, binding = 4)] perm: &[u32],
+    #[spirv(storage_buffer, descriptor_set = 0, binding = 5)] sign: &[f32],
+    #[spirv(storage_buffer, descriptor_set = 0, binding = 6)] out: &mut [f32],
+) {
+    // 2-D: `x` walks the batch columns (contiguous within an `out` row, so the
+    // writes coalesce), `y` walks the observation dimensions. Flattening this
+    // to 1-D would put `cols · dim` threads on one axis, which overruns the
+    // 65535-workgroup limit at realistic batch sizes.
+    let cols = if params.step_select != 0 {
+        params.n
+    } else {
+        params.steps * params.n
+    };
+    let x = invocation_id.x;
+    let d = invocation_id.y;
+    if x >= cols || d >= params.dim {
+        return;
+    }
+    let (t, e) = if params.step_select != 0 {
+        (params.step_select - 1, x)
+    } else {
+        (x % params.steps, x / params.steps)
+    };
+    let src_d = perm.read(d as usize);
+    let v = raw.read(((t * params.dim + src_d) * params.n + e) as usize) * sign.read(d as usize);
+    let v = ((v - mean.read(d as usize)) * inv_std.read(d as usize))
+        .max(-5.0)
+        .min(5.0);
+    out.write((d * params.total_cols + params.col_offset + x) as usize, v);
 }

@@ -12,7 +12,11 @@ use khal_std::macros::{spirv, spirv_bindgen};
 use khal_std::num_traits::Float;
 
 const WORKGROUP_SIZE: u32 = 64;
-const MAX_NUM_THREADS: u32 = MAX_NUM_WORKGROUPS * WORKGROUP_SIZE;
+/// Largest dispatch these kernels accept. They stride by exactly this,
+/// so a host dispatch must be clamped to it: dispatching fewer threads
+/// would leave a gap in the stride, and more would overrun the
+/// 65535-workgroup limit.
+pub const MAX_NUM_THREADS: u32 = MAX_NUM_WORKGROUPS * WORKGROUP_SIZE;
 
 // // GELU constants
 const GELU_COEF_A: f32 = 0.044715;

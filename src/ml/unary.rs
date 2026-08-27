@@ -342,7 +342,7 @@ impl Unary {
         args: Option<&Tensor<Vec4>>,
     ) -> Result<(), GpuBackendError> {
         let mut src = src.as_tensor_mut();
-        let len = src.len() as u32;
+        let len = (src.len() as u32).min(vortx_shaders::ml::unary::MAX_NUM_THREADS);
 
         assert_eq!(
             op.has_args(),
@@ -623,7 +623,7 @@ impl Unary {
     ) -> Result<(), GpuBackendError> {
         let mut dest = dest.as_tensor_mut();
         let src = src.as_tensor_ref();
-        let len = dest.len() as u32;
+        let len = (dest.len() as u32).min(vortx_shaders::ml::unary::MAX_NUM_THREADS);
 
         assert_eq!(
             op.has_args(),

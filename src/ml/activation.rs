@@ -33,7 +33,7 @@ impl ActivationBackward {
         let y = y.as_tensor_ref();
         let shape_g = g.layout().canonicalize();
         let shape_y = y.layout().canonicalize();
-        let num_threads = g.len() as u32;
+        let num_threads = (g.len() as u32).min(vortx_shaders::ml::activation::MAX_NUM_THREADS);
 
         shapes.insert(backend, shape_g)?;
         shapes.insert(backend, shape_y)?;
@@ -65,7 +65,7 @@ impl ActivationBackward {
         let y = y.as_tensor_ref();
         let shape_g = g.layout().canonicalize();
         let shape_y = y.layout().canonicalize();
-        let num_threads = g.len() as u32;
+        let num_threads = (g.len() as u32).min(vortx_shaders::ml::activation::MAX_NUM_THREADS);
 
         shapes.insert(backend, shape_g)?;
         shapes.insert(backend, shape_y)?;

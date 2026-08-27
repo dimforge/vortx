@@ -39,7 +39,7 @@ pub use im2col::{Im2Col, Im2ColConfig};
 pub use layernorm::LayerNorm;
 pub use optim::{Adam, AdamParams};
 pub use pool2d::{GlobalPool2dConfig, Pool2d, Pool2dConfig, pool_output_size};
-pub use ppo::{Ppo, PpoActorParams, PpoValueParams};
+pub use ppo::{Ppo, PpoActorParams, PpoStageParams, PpoValueParams};
 pub use quantized_matrix::*;
 pub use reduce_axis::{ReduceAxis, ReduceOp};
 pub use rms_norm::{RmsNorm, RmsNormConfig};

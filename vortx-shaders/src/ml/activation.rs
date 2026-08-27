@@ -11,7 +11,11 @@ use khal_std::index::MaybeIndexUnchecked;
 use khal_std::macros::{spirv, spirv_bindgen};
 
 const WORKGROUP_SIZE: u32 = 256;
-const MAX_NUM_THREADS: u32 = MAX_NUM_WORKGROUPS * WORKGROUP_SIZE;
+/// Largest dispatch these kernels accept. They stride by exactly this,
+/// so a host dispatch must be clamped to it: dispatching fewer threads
+/// would leave a gap in the stride, and more would overrun the
+/// 65535-workgroup limit.
+pub const MAX_NUM_THREADS: u32 = MAX_NUM_WORKGROUPS * WORKGROUP_SIZE;
 
 /// Backward of tanh, in place: `g *= 1 - y*y`, where `y = tanh(x)` is the forward output.
 ///
