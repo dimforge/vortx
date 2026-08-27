@@ -30,10 +30,10 @@ use khal_std::macros::{spirv, spirv_bindgen};
 const WORKGROUP_SIZE: u32 = 64;
 const MAX_NUM_THREADS: u32 = MAX_NUM_WORKGROUPS * WORKGROUP_SIZE;
 
-/// Conv2d - compute 2D convolution.
+/// Conv2d: 2D convolution.
 ///
-/// This is a straightforward implementation, not optimized for performance.
-/// For each output element, iterate over the kernel and compute the convolution.
+/// Straightforward and unoptimized: iterate over the kernel for each output
+/// element.
 #[spirv_bindgen]
 #[spirv(compute(threads(64, 1, 1)))]
 pub fn conv_2d_nchw(
@@ -109,8 +109,8 @@ pub fn conv_2d_nchw(
                             + ih * input_w
                             + iw) as usize;
 
-                        // Weight index: [oc, ic_local, kh, kw]
-                        // Note: ic_local is used because weight has shape [out_channels, in_channels/groups, kh, kw]
+                        // Weight index: [oc, ic_local, kh, kw], local because the
+                        // weight shape is [out_channels, in_channels/groups, kh, kw].
                         let i_weight = (oc * in_channels_per_group * kernel_h * kernel_w
                             + ic_local * kernel_h * kernel_w
                             + kh * kernel_w

@@ -16,7 +16,7 @@ use khal_std::macros::{spirv, spirv_bindgen};
 #[cfg(any(target_arch = "spirv", target_arch = "nvptx64"))]
 use khal_std::num_traits::Float;
 
-/// Workgroup size - should be >= head_size for efficient V accumulation.
+/// Workgroup size; should be >= head_size for efficient V accumulation.
 #[cfg(feature = "subgroup_ops")]
 const WORKGROUP_SIZE: usize = 32;
 #[cfg(not(feature = "subgroup_ops"))]
@@ -26,7 +26,7 @@ const WORKGROUP_SIZE: usize = 128;
 /// For longer sequences, we use online softmax to avoid storing all scores.
 const MAX_SEQ_LEN: usize = 2048;
 
-/// Block size for Flash Attention - number of KV tokens processed per iteration.
+/// Block size for Flash Attention: KV tokens processed per iteration.
 /// Must be tuned to fit shared memory: kv_tile uses BLOCK_KV * WORKGROUP_SIZE * 4 bytes.
 /// With BLOCK_KV=32 and WORKGROUP_SIZE=128: 32 * 128 * 4 = 16KB for kv_tile alone.
 const BLOCK_KV: usize = 32;
@@ -92,9 +92,7 @@ pub fn fused_attention(
     let q_base = (head_idx * params.head_size) as usize;
     let kv_base = (kv_head * params.head_size) as usize;
 
-    // ==========================================================================
     // Phase 1: Compute Q · K^T for all positions, scale, and find max
-    // ==========================================================================
 
     // Each thread computes dot products for a subset of positions
     // Max iterations: ceil(MAX_SEQ_LEN / WORKGROUP_SIZE) = ceil(2048/128) = 16
@@ -153,9 +151,7 @@ pub fn fused_attention(
 
     khal_std::sync::workgroup_memory_barrier_with_group_sync();
 
-    // ==========================================================================
     // Phase 2: Compute exp(score - max) and sum
-    // ==========================================================================
 
     let the_max = *max_score;
     let mut my_sum = 0.0f32;
@@ -200,9 +196,7 @@ pub fn fused_attention(
 
     khal_std::sync::workgroup_memory_barrier_with_group_sync();
 
-    // ==========================================================================
     // Phase 3: Normalize attention weights (divide by sum)
-    // ==========================================================================
 
     let the_sum = *sum_exp;
     let inv_sum = 1.0 / the_sum;
@@ -217,9 +211,7 @@ pub fn fused_attention(
 
     khal_std::sync::workgroup_memory_barrier_with_group_sync();
 
-    // ==========================================================================
     // Phase 4: Compute weighted sum of values
-    // ==========================================================================
 
     // Each thread computes output for a subset of head dimensions
     let out_base = (head_idx * params.head_size) as usize;
@@ -242,8 +234,8 @@ pub fn fused_attention(
 
 /// Fused attention with online softmax for long sequences.
 ///
-/// This variant uses online softmax to avoid storing all attention scores,
-/// making it memory-efficient for arbitrarily long sequences.
+/// Online softmax avoids storing all attention scores, so this stays
+/// memory-efficient for arbitrarily long sequences.
 #[spirv_bindgen]
 #[cfg_attr(feature = "subgroup_ops", spirv(compute(threads(32, 1, 1))))]
 #[cfg_attr(not(feature = "subgroup_ops"), spirv(compute(threads(128, 1, 1))))]
@@ -289,7 +281,7 @@ pub fn fused_attention_online(
         // Compute Q · K[t]
         let k_base = t * (n_kv_heads * params.head_size) as usize + kv_base;
 
-        // Collaborative dot product - each thread handles part of the dimensions
+        // Collaborative dot product: each thread handles part of the dimensions.
         let mut partial_dot = 0.0f32;
         if tid < head_size {
             let q_val = q.read(q_base + tid);
@@ -360,17 +352,12 @@ pub fn fused_attention_online(
 
 /// Flash Attention kernel with tiled/block-wise processing.
 ///
-/// This kernel processes KV in blocks of BLOCK_KV tokens, using online softmax
-/// to maintain O(1) memory per softmax row. This is ~100x more efficient than
-/// the fused_attention_online kernel which processes one token at a time.
+/// Processes the KV cache in blocks of BLOCK_KV tokens, with online softmax
+/// rescaled between blocks, so softmax needs O(1) memory per row and the
+/// weighted V values accumulate incrementally.
 ///
-/// Workgroup layout: [WORKGROUP_SIZE, 1, 1]
-/// Dispatch: [n_heads, 1, 1] workgroups
-///
-/// Each workgroup computes attention for one query head using Flash Attention:
-/// - Processes KV cache in blocks of BLOCK_KV tokens
-/// - Uses online softmax with rescaling between blocks
-/// - Accumulates weighted V values incrementally
+/// Workgroup layout: [WORKGROUP_SIZE, 1, 1]; dispatch [n_heads, 1, 1]
+/// workgroups, one query head each.
 #[spirv_bindgen]
 #[cfg_attr(feature = "subgroup_ops", spirv(compute(threads(32, 1, 1))))]
 #[cfg_attr(not(feature = "subgroup_ops"), spirv(compute(threads(128, 1, 1))))]
@@ -407,9 +394,7 @@ pub fn flash_attention(
     let kv_stride = (n_kv_heads * params.head_size) as usize;
     let out_base = (head_idx * params.head_size) as usize;
 
-    // ==========================================================================
     // Phase 0: Load Q into shared memory and initialize accumulators
-    // ==========================================================================
     if tid < head_size {
         q_shared.write(tid, q.read(q_base + tid));
         out_accum.write(tid, 0.0);
@@ -420,10 +405,7 @@ pub fn flash_attention(
     }
     khal_std::sync::workgroup_memory_barrier_with_group_sync();
 
-    // ==========================================================================
-    // Main loop: Process KV in blocks of BLOCK_KV tokens
-    // ==========================================================================
-    // Maximum number of blocks we might process
+    // Main loop: process the KV cache in blocks of BLOCK_KV tokens.
     let num_blocks = seq_len.div_ceil(BLOCK_KV);
 
     for block_idx in 0..num_blocks {
@@ -435,9 +417,7 @@ pub fn flash_attention(
         };
         let block_len = block_end - block_start;
 
-        // ----------------------------------------------------------------------
         // Step 1: Load K block into shared memory
-        // ----------------------------------------------------------------------
         // Layout: kv_tile[pos_in_block * head_size + dim]
         // Max elements = BLOCK_KV * head_size, max iterations = ceil(BLOCK_KV * head_size / WORKGROUP_SIZE)
         for iter in 0..BLOCK_KV {
@@ -452,9 +432,7 @@ pub fn flash_attention(
         }
         khal_std::sync::workgroup_memory_barrier_with_group_sync();
 
-        // ----------------------------------------------------------------------
         // Step 2: Compute Q · K[t] for all positions in block
-        // ----------------------------------------------------------------------
         // Each thread handles at most one position (since BLOCK_KV <= WORKGROUP_SIZE)
         if tid < block_len {
             let mut dot = 0.0f32;
@@ -475,9 +453,7 @@ pub fn flash_attention(
         }
         khal_std::sync::workgroup_memory_barrier_with_group_sync();
 
-        // ----------------------------------------------------------------------
         // Step 3: Find block max via parallel reduction
-        // ----------------------------------------------------------------------
         let my_max = if tid < block_len {
             scores.read(tid)
         } else {
@@ -515,9 +491,7 @@ pub fn flash_attention(
 
         let block_max = *block_max_shared;
 
-        // ----------------------------------------------------------------------
         // Step 4: Compute exp(score - block_max) and sum
-        // ----------------------------------------------------------------------
         let my_sum = if tid < block_len {
             let exp_score = (scores.read(tid) - block_max).exp();
             scores.write(tid, exp_score); // Overwrite with exp values
@@ -556,9 +530,7 @@ pub fn flash_attention(
 
         let block_sum = *block_sum_shared;
 
-        // ----------------------------------------------------------------------
         // Step 5: Update running statistics with rescaling
-        // ----------------------------------------------------------------------
         let old_max = *running_max;
         let old_sum = *running_sum;
         let new_max = old_max.max(block_max);
@@ -571,9 +543,7 @@ pub fn flash_attention(
         }
         khal_std::sync::workgroup_memory_barrier_with_group_sync();
 
-        // ----------------------------------------------------------------------
         // Step 6: Load V block and accumulate weighted values
-        // ----------------------------------------------------------------------
         // Reuse kv_tile for V block
         for iter in 0..BLOCK_KV {
             let load_idx = tid + iter * WORKGROUP_SIZE;
@@ -606,9 +576,7 @@ pub fn flash_attention(
         khal_std::sync::workgroup_memory_barrier_with_group_sync();
     }
 
-    // ==========================================================================
     // Final: Normalize by running sum and write output
-    // ==========================================================================
     let final_sum = *running_sum;
     if tid < head_size {
         let val = out_accum.read(tid) / final_sum;

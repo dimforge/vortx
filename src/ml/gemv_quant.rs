@@ -72,8 +72,8 @@ impl QuantizedValue for GpuBlockQ6Kx2 {
     const DEQUANTIZED_LEN: usize = 512;
 }
 
-// SAFETY: These impls are safe, they don't exist in bytemuck because they don't
-// provide impls for non-power-of-two largeish arrays.
+// SAFETY: sound; bytemuck just doesn't provide impls for largeish
+// non-power-of-two arrays.
 unsafe impl bytemuck::Zeroable for GpuBlockQ6Kx2 {}
 unsafe impl bytemuck::Pod for GpuBlockQ6Kx2 {}
 
@@ -245,10 +245,9 @@ impl GemvQuant {
             | GpuQuantTensor::Q5K(_)
             | GpuQuantTensor::Q4K(_) => out.layout().f32_to_vec4(),
             // Non-optimized shaders (Q4_1, Q5_0, Q5_1, Q8K) index output by
-            // global_invocation_id and write Vec4::splat per row. On WebGPU the
-            // OOB writes are clamped; on CUDA they corrupt memory. These shader
-            // paths are currently broken for CUDA and only work by accident on
-            // WebGPU. They are rarely used in practice (most models use Q4K/Q5K).
+            // global_invocation_id and write Vec4::splat per row, so they write
+            // out of bounds: WebGPU clamps that, CUDA corrupts memory. Rarely
+            // used in practice (most models are Q4K/Q5K).
             _ => out.layout(),
         };
 
@@ -279,9 +278,9 @@ impl GemvQuant {
 
         let grid = DispatchGrid::Grid([launch, 1, 1]);
 
-        // Dispatch to the appropriate kernel based on quantization type.
-        // Each variant has its own generated args type, but all share the same field names
-        // (shape_m, out, m, v) since the shader functions have the same signature.
+        // Each quantization variant has its own generated args type, but they
+        // share the field names (shape_m, out, m, v) since the shader signatures
+        // match.
         macro_rules! dispatch_gemv {
             ($kernel:expr, $tensor:expr) => {{
                 #[cfg(not(feature = "push_constants"))]
@@ -495,9 +494,7 @@ mod test {
         result
     }
 
-    // =========================================================================
     // Q8_0
-    // =========================================================================
 
     /// Dequantize a GpuBlockQ8_0x2 slice into flat f32s. Each GPU block = 2 CPU blocks = 64 f32s.
     fn dequantize_q8_0x2(blocks: &[GpuBlockQ8_0x2]) -> Vec<f32> {
@@ -567,9 +564,7 @@ mod test {
         test_gemv_q8_0_generic(&backend).await;
     }
 
-    // =========================================================================
     // Q4_0
-    // =========================================================================
 
     fn dequantize_q4_0x2(blocks: &[GpuBlockQ4_0x2]) -> Vec<f32> {
         let cpu_blocks: &[BlockQ4_0] = bytemuck::cast_slice(blocks);
@@ -638,9 +633,7 @@ mod test {
         test_gemv_q4_0_generic(&backend).await;
     }
 
-    // =========================================================================
     // Q4K
-    // =========================================================================
 
     fn dequantize_q4k(blocks: &[GpuBlockQ4K]) -> Vec<f32> {
         blocks.iter().flat_map(|b| b.dequantize()).collect()
@@ -707,9 +700,7 @@ mod test {
         test_gemv_q4k_generic(&backend).await;
     }
 
-    // =========================================================================
     // Q5K
-    // =========================================================================
 
     fn dequantize_q5k(blocks: &[GpuBlockQ5K]) -> Vec<f32> {
         blocks.iter().flat_map(|b| b.dequantize()).collect()
@@ -776,9 +767,7 @@ mod test {
         test_gemv_q5k_generic(&backend).await;
     }
 
-    // =========================================================================
     // Q6K (optimized path, uses shared memory + workgroup reduction)
-    // =========================================================================
 
     fn dequantize_q6kx2(blocks: &[GpuBlockQ6Kx2]) -> Vec<f32> {
         let cpu_blocks: &[BlockQ6K] = bytemuck::cast_slice(blocks);

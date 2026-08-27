@@ -57,7 +57,7 @@ pub fn layernorm_cols(
 
     let thread_id = local_id.x as usize;
 
-    // Compute the MEAN
+    // Compute the mean.
     let data_len = in_shape.h;
     *workspace.at_mut(thread_id) = 0.0;
     for i in StepRng::new(thread_id as u32..data_len, WORKGROUP_SIZE as u32) {
@@ -92,7 +92,7 @@ pub fn layernorm_cols(
 
     khal_std::sync::workgroup_memory_barrier_with_group_sync();
 
-    // Compute the SQUARED NORM
+    // Compute the squared norm.
     *workspace.at_mut(thread_id) = 0.0;
     for i in StepRng::new(thread_id as u32..data_len, WORKGROUP_SIZE as u32) {
         let val_i = *input.at(in_shape.it(wid.z, wid.y, i, wid.x) as usize) - *the_mean;
@@ -164,7 +164,7 @@ pub fn layernorm_rows(
 
     let thread_id = local_id.x as usize;
 
-    // Compute the MEAN
+    // Compute the mean.
     let data_len = in_shape.w;
     *workspace.at_mut(thread_id) = 0.0;
     for i in StepRng::new(thread_id as u32..data_len, WORKGROUP_SIZE as u32) {
@@ -199,7 +199,7 @@ pub fn layernorm_rows(
 
     khal_std::sync::workgroup_memory_barrier_with_group_sync();
 
-    // Compute the SQUARED NORM
+    // Compute the squared norm.
     *workspace.at_mut(thread_id) = 0.0;
     for i in StepRng::new(thread_id as u32..data_len, WORKGROUP_SIZE as u32) {
         let val_i = *input.at(in_shape.it(wid.z, wid.y, wid.x, i) as usize) - *the_mean;

@@ -18,10 +18,9 @@ use khal_std::{
 };
 
 const WORKGROUP_SIZE: u32 = 256;
-/// Largest dispatch these kernels accept. They stride by exactly this,
-/// so a host dispatch must be clamped to it: dispatching fewer threads
-/// would leave a gap in the stride, and more would overrun the
-/// 65535-workgroup limit.
+/// Largest dispatch these kernels accept: they stride by exactly this, so a host
+/// dispatch must be clamped to it (fewer threads leave a gap in the stride, more
+/// overruns the 65535-workgroup limit).
 pub const MAX_NUM_THREADS: u32 = MAX_NUM_WORKGROUPS * WORKGROUP_SIZE;
 
 /// Scalar parameters for the actor PPO gradient (uniform buffer; 32 bytes).
@@ -193,16 +192,14 @@ pub struct PpoStageParams {
 /// from the step-blocked raw rollout observations, applying the signed-perm
 /// mirror, the normalizer affine and the ±5 clamp in one dispatch.
 ///
-/// The mirror arrives as an explicit signed permutation (`perm`/`sign`, with
-/// identity tables for the un-mirrored half) rather than re-derived index
-/// maths, so it cannot drift from the caller's definition. Normalization
-/// happens here, not before: the mirror is defined on raw observations
-/// (`normalize ∘ mirror`) and the clamp is lossy, so a mirror taken from
-/// already-normalized values is wrong for every saturated feature.
+/// The mirror is an explicit signed permutation (`perm`/`sign`, identity tables
+/// for the un-mirrored half). It has to be applied to raw observations, ahead of
+/// the lossy clamp: a mirror of already-normalized values is wrong for every
+/// saturated feature.
 ///
-/// Batch columns are env-major (`col = e·T + t`, the trainer's sample flatten
-/// order) while the raw buffer is step-blocked, hence the
-/// `raw[(t·dim + perm[d])·n + e]` gather. Dispatch `[cols, dim, 1]` threads.
+/// Batch columns are env-major (`col = e·T + t`) while the raw buffer is
+/// step-blocked, hence the `raw[(t·dim + perm[d])·n + e]` gather. Dispatch
+/// `[cols, dim, 1]` threads.
 #[spirv_bindgen]
 #[spirv(compute(threads(256, 1, 1)))]
 pub fn gpu_ppo_stage_batch(
@@ -215,10 +212,9 @@ pub fn gpu_ppo_stage_batch(
     #[spirv(storage_buffer, descriptor_set = 0, binding = 5)] sign: &[f32],
     #[spirv(storage_buffer, descriptor_set = 0, binding = 6)] out: &mut [f32],
 ) {
-    // 2-D: `x` walks the batch columns (contiguous within an `out` row, so the
-    // writes coalesce), `y` walks the observation dimensions. Flattening this
-    // to 1-D would put `cols · dim` threads on one axis, which overruns the
-    // 65535-workgroup limit at realistic batch sizes.
+    // `x` walks the batch columns (contiguous within an `out` row, so the writes
+    // coalesce), `y` the observation dimensions. A flat 1-D dispatch of
+    // `cols · dim` threads would overrun the 65535-workgroup limit.
     let cols = if params.step_select != 0 {
         params.n
     } else {

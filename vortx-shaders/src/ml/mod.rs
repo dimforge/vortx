@@ -1,11 +1,3 @@
-// #![allow(clippy::too_many_arguments)]
-// // `spirv_bindgen` generates host-side dispatch code that performs `% workgroup_size`,
-// // which triggers this lint when a workgroup dimension is 1.
-// #![allow(clippy::modulo_one)]
-// #![allow(unexpected_cfgs)]
-// // Shader entry points and their constants appear dead on host but are used on GPU.
-// #![allow(dead_code, non_snake_case)]
-
 // TODO: keep the modules private?
 pub mod activation;
 pub mod batched_multiquery_attention;

@@ -15,7 +15,7 @@ const WORKGROUP_SIZE: u32 = 32;
 // BlockQ8K structure (repr(C), alignment 4):
 // - d: f32 (1 u32)
 // - qs: [i8; 256] (64 u32s)
-// - bsums: [i16; 16] (8 u32s, no padding — 260 is already 2-byte aligned)
+// - bsums: [i16; 16] (8 u32s, no padding: 260 is already 2-byte aligned)
 // Total: 73 u32s = 292 bytes
 const BLOCK_Q8K_SIZE: u32 = 73;
 

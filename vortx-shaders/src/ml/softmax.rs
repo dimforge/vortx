@@ -60,7 +60,7 @@ pub fn softmax(
     let l = workgroup_id.z;
     let thread_id = local_id.x as usize;
 
-    // Compute the MAX
+    // Compute the max.
     let data_len = shape.w;
     let mut my_max = [-1.0e38f32];
 
@@ -179,7 +179,7 @@ pub fn log_softmax(
     let l = workgroup_id.z;
     let thread_id = local_id.x as usize;
 
-    // Compute the MAX
+    // Compute the max.
     let data_len = shape.w;
     let mut my_max = [-1.0e38f32];
 

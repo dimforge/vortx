@@ -6,7 +6,7 @@ use nalgebra::{DMatrix, DVector};
 use vortx_shaders::ml::AttentionParams;
 
 #[derive(Shader)]
-/// Fused attention shader - combines Q*K^T, scale, mask, softmax, and *V into one kernel.
+/// Fused attention shader: Q*K^T, scale, mask, softmax and *V in one kernel.
 pub struct FusedAttention {
     pub fused_attention: vortx_shaders::ml::FusedAttention,
     pub fused_attention_online: vortx_shaders::ml::FusedAttentionOnline,
@@ -15,9 +15,6 @@ pub struct FusedAttention {
 
 impl FusedAttention {
     /// Launch the fused attention kernel.
-    ///
-    /// This replaces the 4-dispatch attention (matmul -> mask -> softmax -> matmul)
-    /// with a single fused kernel dispatch.
     pub fn launch(
         &self,
         _backend: &GpuBackend,

@@ -12,10 +12,9 @@ use khal_std::{
 };
 
 const WORKGROUP_SIZE: u32 = 128;
-/// Largest dispatch these kernels accept. They stride by exactly this,
-/// so a host dispatch must be clamped to it: dispatching fewer threads
-/// would leave a gap in the stride, and more would overrun the
-/// 65535-workgroup limit.
+/// Largest dispatch these kernels accept: they stride by exactly this, so a host
+/// dispatch must be clamped to it (fewer threads leave a gap in the stride, more
+/// overruns the 65535-workgroup limit).
 pub const MAX_NUM_THREADS: u32 = MAX_NUM_WORKGROUPS * WORKGROUP_SIZE;
 
 /// Convert to contiguous row-major layout.

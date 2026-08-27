@@ -108,12 +108,10 @@ impl RoPE {
             // for each head. So we need to transform `i` into the corresponding index within
             // the head.
             let head_dim = (i % head_size) as f32;
-            // Not that the formulae from the video linked above would be:
+            // The formula from the video linked above would be:
             //     10000.0.powf(-2.0 * ((i / 2) as f32 - 1.0) / dim as f32)
-            // Although in the paper shown in the video, their index is 1-based which his why thy
-            // have to subtract 1.0 whereas we don't need to.The `i / 2` and multiplication by 2.0
-            // are both accounted for by stepping only on even values for `i`.
-            // Therefore, the formulae below is equivalent to the RoPE paper's formulae.
+            // Its index is 1-based, hence the `- 1.0`; the `i / 2` and the factor 2.0
+            // are both accounted for by stepping `i` on even values only.
             let theta = 10000.0_f32.powf(-head_dim / head_size as f32);
             let m_theta = pos as f32 * theta;
             let rot = Rotation2::new(m_theta);
@@ -122,10 +120,9 @@ impl RoPE {
             let mut out_q = q.fixed_rows_mut::<2>(i);
             out_q.copy_from(&(rot * qi));
 
-            // When i >= kv_dim, we are done rotating all the elements from the keys. That's
-            // because there are less key heads than query heads, but each key head sub-vector has
-            // the same dimension as the query head (they loose dimension when multiplied with the
-            // key weight matrices).
+            // Past kv_dim, every key element has been rotated: there are fewer key
+            // heads than query heads, though each key head sub-vector has the same
+            // dimension as a query head.
             if i < kv_dim {
                 let ki = vector![k[i], k[i + 1]];
                 let mut out_k = k.fixed_rows_mut::<2>(i);

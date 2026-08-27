@@ -25,7 +25,7 @@ use khal_std::macros::{spirv, spirv_bindgen};
 const WORKGROUP_SIZE: u32 = 64;
 const MAX_NUM_THREADS: u32 = MAX_NUM_WORKGROUPS * WORKGROUP_SIZE;
 
-/// MaxPool2d - compute max over a 2D window.
+/// MaxPool2d: max over a 2D window.
 #[spirv_bindgen]
 #[spirv(compute(threads(64, 1, 1)))]
 pub fn max_pool_2d(
@@ -84,7 +84,7 @@ pub fn max_pool_2d(
             w_end_unclamped
         };
 
-        // Initialize max with a very small value (SPIR-V doesn't support infinity literals)
+        // SPIR-V has no infinity literals, so start from a very small value.
         let mut max_val = -3.4028235e+38_f32; // Close to f32::MIN
 
         // Iterate over the pooling window
@@ -110,7 +110,7 @@ pub fn max_pool_2d(
     }
 }
 
-/// AvgPool2d - compute average over a 2D window.
+/// AvgPool2d: average over a 2D window.
 #[spirv_bindgen]
 #[spirv(compute(threads(64, 1, 1)))]
 pub fn avg_pool_2d(
@@ -202,7 +202,7 @@ pub fn avg_pool_2d(
     }
 }
 
-/// GlobalAvgPool2d - average over entire spatial dimensions.
+/// GlobalAvgPool2d: average over the entire spatial dimensions.
 /// Input: [N, C, H, W], Output: [N, C, 1, 1]
 #[spirv_bindgen]
 #[spirv(compute(threads(64, 1, 1)))]
@@ -240,7 +240,7 @@ pub fn global_avg_pool_2d(
     }
 }
 
-/// GlobalMaxPool2d - max over entire spatial dimensions.
+/// GlobalMaxPool2d: max over the entire spatial dimensions.
 /// Input: [N, C, H, W], Output: [N, C, 1, 1]
 #[spirv_bindgen]
 #[spirv(compute(threads(64, 1, 1)))]

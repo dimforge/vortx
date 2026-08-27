@@ -46,7 +46,7 @@ pub fn reduce_sum_axis(
         // Decompose linear index in output
         let id_dest = shape_dest.decompose(thread_id);
 
-        // Build source coordinates - start with output coords
+        // Build the source coordinates, starting from the output coords.
         let mut id_src = id_dest;
 
         // Sum over all elements along the reduce axis
@@ -99,7 +99,7 @@ pub fn reduce_mean_axis(
         // Decompose linear index in output
         let id_dest = shape_dest.decompose(thread_id);
 
-        // Build source coordinates - start with output coords
+        // Build the source coordinates, starting from the output coords.
         let mut id_src = id_dest;
 
         // Sum over all elements along the reduce axis
@@ -152,7 +152,7 @@ pub fn reduce_max_axis(
         // Decompose linear index in output
         let id_dest = shape_dest.decompose(thread_id);
 
-        // Build source coordinates - start with output coords
+        // Build the source coordinates, starting from the output coords.
         let mut id_src = id_dest;
 
         // Find max over all elements along the reduce axis
