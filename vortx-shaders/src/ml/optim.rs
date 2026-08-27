@@ -1,14 +1,15 @@
-//! Optimizer kernels (Adam). Added for zealot; vortx upstream has no optimizers.
+//! Optimizer kernels (Adam).
 
-use super::shape::Shape;
+use crate::linalg::Shape;
+use crate::utils::iterators::StepRng;
 use crate::utils::limits::MAX_NUM_WORKGROUPS;
-use glamx::UVec3;
+use khal_std::glamx::UVec3;
+#[cfg(any(target_arch = "spirv", target_arch = "nvptx64"))]
+use khal_std::num_traits::Float;
 use khal_std::{
     index::MaybeIndexUnchecked,
     macros::{spirv, spirv_bindgen},
 };
-#[cfg(any(target_arch = "spirv", target_arch = "nvptx64"))]
-use khal_std::num_traits::Float;
 
 const WORKGROUP_SIZE: u32 = 256;
 const MAX_NUM_THREADS: u32 = MAX_NUM_WORKGROUPS * WORKGROUP_SIZE;
@@ -16,10 +17,7 @@ const MAX_NUM_THREADS: u32 = MAX_NUM_WORKGROUPS * WORKGROUP_SIZE;
 /// Scalar parameters for one Adam step (uniform buffer; padded to 32 bytes).
 #[repr(C)]
 #[derive(Clone, Copy)]
-#[cfg_attr(
-    not(any(target_arch = "spirv", target_arch = "nvptx64")),
-    derive(bytemuck::Pod, bytemuck::Zeroable)
-)]
+#[cfg_attr(not(target_arch_is_gpu), derive(bytemuck::Pod, bytemuck::Zeroable))]
 pub struct AdamParams {
     pub lr: f32,
     pub beta1: f32,
@@ -46,7 +44,7 @@ pub fn gpu_adam(
     #[spirv(storage_buffer, descriptor_set = 0, binding = 4)] m: &mut [f32],
     #[spirv(storage_buffer, descriptor_set = 0, binding = 5)] v: &mut [f32],
 ) {
-    for thread_id in (invocation_id.x..shape.len()).step_by(MAX_NUM_THREADS as usize) {
+    for thread_id in StepRng::new(invocation_id.x..shape.len(), MAX_NUM_THREADS) {
         let id = shape.decompose(thread_id);
         let i = shape.it_vec(id) as usize;
         let g = grad.read(i);

@@ -1,13 +1,13 @@
-//! Optimizer host dispatch (Adam). Added for zealot.
+//! Optimizer host dispatch (Adam).
 
-use crate::shaders::linalg::GpuAdam;
+use crate::shaders::ml::GpuAdam;
 use crate::shapes::TensorLayoutBuffers;
 use crate::tensor::{AsTensorMut, AsTensorRef};
 use khal::Shader;
 use khal::backend::{GpuBackend, GpuBackendError, GpuPass};
 
 // Re-export the params struct from the shader crate.
-pub use vortx_shaders::linalg::optim::AdamParams;
+pub use vortx_shaders::ml::optim::AdamParams;
 
 /// The Adam optimizer kernel.
 #[derive(Shader)]

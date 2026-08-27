@@ -1,43 +1,22 @@
-//! Element-wise activation functions (host dispatch).
+//! Backward passes of the element-wise activations (host dispatch).
 //!
-//! Added for zealot's MLP policy — vortx upstream has no activations.
+//! The forward directions are provided by [`crate::ml::Unary`]
+//! (`UnaryOp::Tanh`, `UnaryOp::Elu`); only the gradients live here.
 
-use crate::shaders::linalg::{GpuTanh, GpuTanhBackward};
+use crate::shaders::ml::GpuTanhBackward;
 use crate::shapes::TensorLayoutBuffers;
 use crate::tensor::{AsTensorMut, AsTensorRef};
 use khal::Shader;
 use khal::backend::{GpuBackend, GpuBackendError, GpuPass};
 
-/// Element-wise activation kernels.
+/// Element-wise activation gradient kernels.
 #[derive(Shader)]
-pub struct Activation {
-    /// In-place tanh.
-    pub tanh: GpuTanh,
+pub struct ActivationBackward {
     /// In-place tanh backward (`g *= 1 - y^2`).
     pub tanh_backward: GpuTanhBackward,
 }
 
-impl Activation {
-    /// In-place tanh: `a = tanh(a)`.
-    pub fn tanh(
-        &self,
-        backend: &GpuBackend,
-        shapes: &mut TensorLayoutBuffers,
-        pass: &mut GpuPass,
-        mut a: impl AsTensorMut<f32>,
-    ) -> Result<(), GpuBackendError> {
-        let mut a = a.as_tensor_mut();
-        let shape_a = a.layout().canonicalize();
-        let num_threads = a.len() as u32;
-
-        shapes.insert(backend, shape_a)?;
-        let shape_a_buf = shapes.get(shape_a).unwrap();
-        let mut buf_a = a.buffer_mut();
-
-        self.tanh
-            .call(pass, num_threads, &shape_a_buf.as_slice(), &mut buf_a)
-    }
-
+impl ActivationBackward {
     /// In-place tanh backward: `g *= 1 - y^2`, where `y = tanh(x)` is the forward output.
     /// `g` and `y` must have the same shape.
     pub fn tanh_backward(
