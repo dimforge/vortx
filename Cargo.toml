@@ -36,6 +36,7 @@ khal = { version = "0.3", features = ["derive"]}
 
 [dependencies]
 bytemuck = "1"
+glamx = { version = "0.3", default-features = false, features = ["bytemuck"] }
 include_dir = "0.7"
 nalgebra = "0.35"
 khal = { workspace = true }
