@@ -16,6 +16,13 @@ const WORKGROUP_SIZE: u32 = 256;
 /// overruns the 65535-workgroup limit).
 pub const MAX_NUM_THREADS: u32 = MAX_NUM_WORKGROUPS * WORKGROUP_SIZE;
 
+// Guards `WORKGROUP_SIZE` against the `threads(...)` attribute it duplicates.
+#[cfg(not(target_arch_is_gpu))]
+static_assertions::const_assert_eq!(
+    WORKGROUP_SIZE,
+    <GpuTanhBackwardArgs<'static> as khal::shader::ShaderArgsType>::WORKGROUP_SIZE[0]
+);
+
 /// Backward of tanh, in place: `g *= 1 - y*y`, where `y = tanh(x)` is the forward output.
 ///
 /// `g` and `y` must have the same shape.

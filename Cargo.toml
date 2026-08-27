@@ -46,6 +46,7 @@ rand = { version = "0.10", optional = true }
 
 [dev-dependencies]
 nalgebra = { version = "0.35", features = ["rand"] }
+half = "2"
 futures-test = "0.3"
 serial_test = "3"
 approx = "0.5"

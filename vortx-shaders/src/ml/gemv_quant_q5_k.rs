@@ -108,7 +108,7 @@ fn dequantize_q5_k_workgroup(m: &[u32], block_id: u32, k: u32) -> [Vec4; 2] {
 
 #[spirv_bindgen]
 #[spirv(compute(threads(32, 1, 1)))]
-pub fn gemv(
+pub fn gemv_q5_k(
     #[spirv(workgroup_id)] workgroup_id: UVec3,
     #[spirv(local_invocation_id)] local_id: UVec3,
     #[spirv(workgroup)] sketch: &mut [Vec4; WORKGROUP_SIZE],

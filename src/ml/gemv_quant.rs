@@ -132,55 +132,55 @@ impl GemvQuant {
 #[derive(Shader)]
 /// Shader for computing the product of a matrix and a vector.
 pub struct GemvQ8_0x2 {
-    pub gemv: vortx_shaders::ml::gemv_quant_q8_0x2::Gemv,
+    pub gemv: vortx_shaders::ml::gemv_quant_q8_0x2::GemvQ80x2,
 }
 
 #[derive(Shader)]
 /// Shader for computing the product of a matrix and a vector.
 pub struct GemvQ5_0x2 {
-    pub gemv: vortx_shaders::ml::gemv_quant_q5_0x2::Gemv,
+    pub gemv: vortx_shaders::ml::gemv_quant_q5_0x2::GemvQ50x2,
 }
 
 #[derive(Shader)]
 /// Shader for computing the product of a matrix and a vector.
 pub struct GemvQ5_1x2 {
-    pub gemv: vortx_shaders::ml::gemv_quant_q5_1x2::Gemv,
+    pub gemv: vortx_shaders::ml::gemv_quant_q5_1x2::GemvQ51x2,
 }
 
 #[derive(Shader)]
 /// Shader for computing the product of a matrix and a vector.
 pub struct GemvQ4_0x2 {
-    pub gemv: vortx_shaders::ml::gemv_quant_q4_0x2::Gemv,
+    pub gemv: vortx_shaders::ml::gemv_quant_q4_0x2::GemvQ40x2,
 }
 
 #[derive(Shader)]
 /// Shader for computing the product of a matrix and a vector.
 pub struct GemvQ4_1x2 {
-    pub gemv: vortx_shaders::ml::gemv_quant_q4_1x2::Gemv,
+    pub gemv: vortx_shaders::ml::gemv_quant_q4_1x2::GemvQ41x2,
 }
 
 #[derive(Shader)]
 /// Shader for computing the product of a matrix and a vector.
 pub struct GemvQ8K {
-    pub gemv: vortx_shaders::ml::gemv_quant_q8_k::Gemv,
+    pub gemv: vortx_shaders::ml::gemv_quant_q8_k::GemvQ8K,
 }
 
 #[derive(Shader)]
 /// Shader for computing the product of a matrix and a vector.
 pub struct GemvQ6Kx2 {
-    pub gemv: vortx_shaders::ml::gemv_quant_q6_kx2::Gemv,
+    pub gemv: vortx_shaders::ml::gemv_quant_q6_kx2::GemvQ6Kx2,
 }
 
 #[derive(Shader)]
 /// Shader for computing the product of a matrix and a vector.
 pub struct GemvQ5K {
-    pub gemv: vortx_shaders::ml::gemv_quant_q5_k::Gemv,
+    pub gemv: vortx_shaders::ml::gemv_quant_q5_k::GemvQ5K,
 }
 
 #[derive(Shader)]
 /// Shader for computing the product of a matrix and a vector.
 pub struct GemvQ4K {
-    pub gemv: vortx_shaders::ml::gemv_quant_q4_k::Gemv,
+    pub gemv: vortx_shaders::ml::gemv_quant_q4_k::GemvQ4K,
 }
 
 impl GemvQuant {

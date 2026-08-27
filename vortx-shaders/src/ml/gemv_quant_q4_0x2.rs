@@ -44,7 +44,7 @@ fn dequantize_part(data: u32, scale: f32) -> [Vec4; 2] {
 
 #[spirv_bindgen]
 #[spirv(compute(threads(32, 1, 1)))]
-pub fn gemv(
+pub fn gemv_q4_0x2(
     #[spirv(workgroup_id)] workgroup_id: UVec3,
     #[spirv(local_invocation_id)] local_id: UVec3,
     #[spirv(workgroup)] sketch: &mut [Vec4; WORKGROUP_SIZE],

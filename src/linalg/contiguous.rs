@@ -51,7 +51,8 @@ impl Contiguous {
         tensor_shape = tensor_shape.canonicalize();
         // println!("Tensor shape (canon): {:?}", tensor_shape);
 
-        let num_threads = (tensor_shape.len() as u32).min(vortx_shaders::linalg::contiguous::MAX_NUM_THREADS);
+        let num_threads =
+            (tensor_shape.len() as u32).min(vortx_shaders::linalg::contiguous::MAX_NUM_THREADS);
 
         if let Some(offset) = offset {
             #[cfg(not(feature = "push_constants"))]

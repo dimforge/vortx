@@ -24,7 +24,7 @@ fn reduce_sum(index: usize, stride: usize, sketch: &mut [Vec4; WORKGROUP_SIZE]) 
 
 #[spirv_bindgen]
 #[spirv(compute(threads(32, 1, 1)))]
-pub fn gemv(
+pub fn gemv_q8_0x2(
     #[spirv(workgroup_id)] workgroup_id: UVec3,
     #[spirv(local_invocation_id)] local_id: UVec3,
     #[spirv(workgroup)] sketch: &mut [Vec4; WORKGROUP_SIZE],

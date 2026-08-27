@@ -17,6 +17,13 @@ const WORKGROUP_SIZE: u32 = 256;
 /// overruns the 65535-workgroup limit).
 pub const MAX_NUM_THREADS: u32 = MAX_NUM_WORKGROUPS * WORKGROUP_SIZE;
 
+// Guards `WORKGROUP_SIZE` against the `threads(...)` attribute it duplicates.
+#[cfg(not(target_arch_is_gpu))]
+static_assertions::const_assert_eq!(
+    WORKGROUP_SIZE,
+    <GpuAdamArgs<'static> as khal::shader::ShaderArgsType>::WORKGROUP_SIZE[0]
+);
+
 /// Scalar parameters for one Adam step (uniform buffer; padded to 32 bytes).
 #[repr(C)]
 #[derive(Clone, Copy)]

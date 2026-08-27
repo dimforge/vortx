@@ -17,6 +17,13 @@ const WORKGROUP_SIZE: u32 = 64;
 /// overruns the 65535-workgroup limit).
 pub const MAX_NUM_THREADS: u32 = MAX_NUM_WORKGROUPS * WORKGROUP_SIZE;
 
+// Guards `WORKGROUP_SIZE` against the `threads(...)` attribute it duplicates.
+#[cfg(not(target_arch_is_gpu))]
+static_assertions::const_assert_eq!(
+    WORKGROUP_SIZE,
+    <AbsOpArgs<'static> as khal::shader::ShaderArgsType>::WORKGROUP_SIZE[0]
+);
+
 // GELU constants
 const GELU_COEF_A: f32 = 0.044715;
 const SQRT_2_OVER_PI: f32 = 0.79788456080286535587989211986876;

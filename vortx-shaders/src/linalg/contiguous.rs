@@ -17,6 +17,13 @@ const WORKGROUP_SIZE: u32 = 128;
 /// overruns the 65535-workgroup limit).
 pub const MAX_NUM_THREADS: u32 = MAX_NUM_WORKGROUPS * WORKGROUP_SIZE;
 
+// Guards `WORKGROUP_SIZE` against the `threads(...)` attribute it duplicates.
+#[cfg(not(target_arch_is_gpu))]
+static_assertions::const_assert_eq!(
+    WORKGROUP_SIZE,
+    <ContiguousArgs<'static> as khal::shader::ShaderArgsType>::WORKGROUP_SIZE[0]
+);
+
 /// Convert to contiguous row-major layout.
 #[spirv_bindgen]
 #[spirv(compute(threads(128, 1, 1)))]

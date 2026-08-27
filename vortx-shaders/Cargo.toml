@@ -37,3 +37,4 @@ khal-std = { workspace = true }
 [target.'cfg(not(any(target_arch = "spirv", target_arch = "nvptx64")))'.dependencies]
 khal = { workspace = true }
 bytemuck = { version = "1", features = ["derive"] }
+static_assertions = "1"

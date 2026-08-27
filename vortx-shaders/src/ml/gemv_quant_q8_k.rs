@@ -38,7 +38,7 @@ fn dequantize_block(data: &[u32], base: usize) -> [Vec4; 64] {
 
 #[spirv_bindgen]
 #[spirv(compute(threads(32, 1, 1)))]
-pub fn gemv(
+pub fn gemv_q8_k(
     #[spirv(global_invocation_id)] invocation_id: UVec3,
     #[cfg(feature = "push_constants")]
     #[spirv(push_constant)]
