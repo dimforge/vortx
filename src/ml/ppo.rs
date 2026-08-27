@@ -1,17 +1,17 @@
-//! PPO loss-gradient host dispatch. Added for zealot's GPU policy update.
+//! PPO loss-gradient host dispatch.
 //!
-//! Wraps the two PPO output-gradient kernels (clipped-surrogate actor gradient +
-//! log_std contribution, and clipped value-loss gradient). These have no `Shape`
-//! uniform — dimensions ride in the params struct and indexing is row-major — so
-//! no `TensorLayoutBuffers` is needed.
+//! Wraps the two PPO output-gradient kernels (clipped-surrogate actor gradient
+//! plus log_std contribution, and clipped value-loss gradient). They need no
+//! `Shape` uniform or `TensorLayoutBuffers`: dimensions ride in the params
+//! struct and indexing is row-major.
 
-use crate::shaders::linalg::{GpuPpoActorGrad, GpuPpoValueGrad};
+use crate::shaders::ml::{GpuPpoActorGrad, GpuPpoValueGrad};
 use crate::tensor::{AsTensorMut, AsTensorRef};
 use khal::Shader;
 use khal::backend::{GpuBackend, GpuBackendError, GpuPass};
 
 // Re-export the params structs from the shader crate.
-pub use vortx_shaders::linalg::ppo::{PpoActorParams, PpoValueParams};
+pub use vortx_shaders::ml::ppo::{PpoActorParams, PpoValueParams};
 
 /// PPO loss-gradient kernels.
 #[derive(Shader)]

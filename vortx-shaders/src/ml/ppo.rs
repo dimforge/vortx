@@ -1,21 +1,21 @@
-//! PPO loss-gradient kernels (added for zealot's GPU policy update).
+//! PPO loss-gradient kernels.
 //!
-//! These produce the per-sample OUTPUT gradients that feed the generic
+//! These produce the per-sample output gradients that feed the generic
 //! GEMM/`elu_backward` backward backbone: the clipped-surrogate actor gradient
 //! `g_mean` plus the state-independent `log_std` gradient contribution, and the
-//! clipped value-loss gradient. An exact port of `zealot-rl`'s `minibatch_step`
-//! (ppo.rs). Every per-sample tensor is row-major `[rows x M]` (M = minibatch
-//! columns); one GPU thread handles one sample column `m`, looping over the
-//! (small) action dimension internally.
+//! clipped value-loss gradient. Every per-sample tensor is row-major
+//! `[rows x M]` (M = minibatch columns); one GPU thread handles one sample
+//! column `m`, looping over the (small) action dimension internally.
 
+use crate::utils::iterators::StepRng;
 use crate::utils::limits::MAX_NUM_WORKGROUPS;
-use glamx::UVec3;
+use khal_std::glamx::UVec3;
+#[cfg(any(target_arch = "spirv", target_arch = "nvptx64"))]
+use khal_std::num_traits::Float;
 use khal_std::{
     index::MaybeIndexUnchecked,
     macros::{spirv, spirv_bindgen},
 };
-#[cfg(any(target_arch = "spirv", target_arch = "nvptx64"))]
-use khal_std::num_traits::Float;
 
 const WORKGROUP_SIZE: u32 = 256;
 const MAX_NUM_THREADS: u32 = MAX_NUM_WORKGROUPS * WORKGROUP_SIZE;
@@ -23,10 +23,7 @@ const MAX_NUM_THREADS: u32 = MAX_NUM_WORKGROUPS * WORKGROUP_SIZE;
 /// Scalar parameters for the actor PPO gradient (uniform buffer; 32 bytes).
 #[repr(C)]
 #[derive(Clone, Copy)]
-#[cfg_attr(
-    not(any(target_arch = "spirv", target_arch = "nvptx64")),
-    derive(bytemuck::Pod, bytemuck::Zeroable)
-)]
+#[cfg_attr(not(target_arch_is_gpu), derive(bytemuck::Pod, bytemuck::Zeroable))]
 pub struct PpoActorParams {
     /// PPO clip epsilon.
     pub clip: f32,
@@ -34,7 +31,7 @@ pub struct PpoActorParams {
     pub entropy_coef: f32,
     /// Per-sample averaging factor `1 / minibatch_size`.
     pub scale: f32,
-    /// `0.5·ln(2π)` — the Gaussian log-prob normalisation constant.
+    /// `0.5·ln(2π)`: the Gaussian log-prob normalisation constant.
     pub log_sqrt_2pi: f32,
     /// Action dimensionality (rows).
     pub action_dim: u32,
@@ -47,10 +44,7 @@ pub struct PpoActorParams {
 /// Scalar parameters for the clipped value-loss gradient (uniform; 32 bytes).
 #[repr(C)]
 #[derive(Clone, Copy)]
-#[cfg_attr(
-    not(any(target_arch = "spirv", target_arch = "nvptx64")),
-    derive(bytemuck::Pod, bytemuck::Zeroable)
-)]
+#[cfg_attr(not(target_arch_is_gpu), derive(bytemuck::Pod, bytemuck::Zeroable))]
 pub struct PpoValueParams {
     /// PPO clip epsilon (value clipping range).
     pub clip: f32,
@@ -71,7 +65,7 @@ pub struct PpoValueParams {
 /// For sample column `m` (one thread): compute the new diagonal-Gaussian
 /// log-prob over the `action_dim` rows, the importance ratio
 /// `exp(logp − logp_old)`, the PPO clip mask, then write `g_mean[k,m]` and
-/// `g_logstd[k,m]` for every action dim `k`. Matches `minibatch_step`:
+/// `g_logstd[k,m]` for every action dim `k`:
 ///   if !clipped: g_mean = −(adv·ratio·d/σ²)·scale,
 ///                g_logstd += −adv·ratio·(d²/σ² − 1)·scale,
 ///   always:      g_logstd += −entropy_coef·scale.
@@ -93,8 +87,9 @@ pub fn gpu_ppo_actor_grad(
     let clip = params.clip;
     let scale = params.scale;
     let ent = params.entropy_coef;
-    for m in (invocation_id.x as usize..m_cols).step_by(MAX_NUM_THREADS as usize) {
-        // New log-prob over the action dims (matches ActorCritic::logp).
+    for m in StepRng::new(invocation_id.x..m_cols as u32, MAX_NUM_THREADS) {
+        let m = m as usize;
+        // New log-prob over the action dims.
         let mut logp = 0.0f32;
         for k in 0..a {
             let idx = k * m_cols + m;
@@ -105,8 +100,7 @@ pub fn gpu_ppo_actor_grad(
         }
         let ratio = (logp - logp_old.read(m)).exp();
         let av = adv.read(m);
-        let clipped =
-            (av >= 0.0 && ratio > 1.0 + clip) || (av < 0.0 && ratio < 1.0 - clip);
+        let clipped = (av >= 0.0 && ratio > 1.0 + clip) || (av < 0.0 && ratio < 1.0 - clip);
         for k in 0..a {
             let idx = k * m_cols + m;
             let ls = log_std.read(k);
@@ -128,7 +122,7 @@ pub fn gpu_ppo_actor_grad(
 ///
 /// For sample column `m`: `v_clipped = value_old + clamp(v − value_old, ±clip)`,
 /// and `dv = 2·(v_clipped − ret)` if the clipped squared error is larger else
-/// `2·(v − ret)`; writes `g_v[m] = value_coef·dv·scale`. Matches `minibatch_step`.
+/// `2·(v − ret)`; writes `g_v[m] = value_coef·dv·scale`.
 #[spirv_bindgen]
 #[spirv(compute(threads(256, 1, 1)))]
 pub fn gpu_ppo_value_grad(
@@ -142,7 +136,8 @@ pub fn gpu_ppo_value_grad(
     let m_cols = params.num_cols as usize;
     let clip = params.clip;
     let scale = params.scale;
-    for m in (invocation_id.x as usize..m_cols).step_by(MAX_NUM_THREADS as usize) {
+    for m in StepRng::new(invocation_id.x..m_cols as u32, MAX_NUM_THREADS) {
+        let m = m as usize;
         let v = v_pred.read(m);
         let vo = value_old.read(m);
         let r = ret.read(m);
