@@ -78,8 +78,7 @@ pub fn gemm_tiled(
     let m = shape_out.h;
     let n = shape_out.w;
     let k = shape_lhs.w;
-    // Register accumulator: 4 rows × a vec4 of the 4 output columns per thread.
-    // The inner loop does vec4 FMAs (4-wide) instead of 16 scalar MACs.
+    // Register accumulator: 4 rows, each a vec4 of the thread's 4 output columns.
     let mut acc: [Vec4; 4];
 
     // Process batch dimension
@@ -182,105 +181,6 @@ pub fn gemm_tiled(
             }
             i += 1;
         }
-    }
-}
-
-/// vec4 tiled GEMM: identical math to `gemm_tiled` but loads the A/B tiles from
-/// global memory with **128-bit vec4 transactions** (4 contiguous f32 each). It
-/// assumes CONTIGUOUS row-major `lhs`/`rhs`, a single batch, and dims that fill
-/// the tiles exactly (`M%TILE_M==0`, `N%TILE_N==0`, `K%TILE_K==0`) so no boundary
-/// handling is needed. The host (`dispatch_tiled_vec4`) enforces this and falls
-/// back to `gemm_tiled` (scalar) for transposed/odd-dim cases (backward GEMMs,
-/// input layer with K=43/49).
-#[spirv_bindgen]
-#[spirv(compute(threads(16, 16, 1)))]
-pub fn gemm_tiled_vec4(
-    #[spirv(local_invocation_id)] local_id: UVec3,
-    #[spirv(workgroup_id)] wg_id: UVec3,
-    #[spirv(workgroup)] smem_a: &mut [f32; SMEM_A_SIZE],
-    #[spirv(workgroup)] smem_b: &mut [f32; SMEM_B_SIZE],
-    #[spirv(uniform, descriptor_set = 0, binding = 0)] shape_out: &Shape,
-    #[spirv(uniform, descriptor_set = 0, binding = 1)] shape_lhs: &Shape,
-    #[spirv(uniform, descriptor_set = 0, binding = 2)] shape_rhs: &Shape,
-    #[spirv(storage_buffer, descriptor_set = 0, binding = 3)] out: &mut [f32],
-    #[spirv(storage_buffer, descriptor_set = 0, binding = 4)] lhs: &[Vec4],
-    #[spirv(storage_buffer, descriptor_set = 0, binding = 5)] rhs: &[Vec4],
-) {
-    let _ = shape_rhs;
-    let tid_x = local_id.x;
-    let tid_y = local_id.y;
-    let linear_tid = tid_y * WG_N + tid_x;
-    let tile_row = wg_id.y * TILE_M;
-    let tile_col = wg_id.x * TILE_N;
-    let n = shape_out.w;
-    let k = shape_lhs.w;
-
-    let mut acc: [Vec4; 4] = [Vec4::ZERO; 4];
-
-    let mut k_tile: u32 = 0;
-    while k_tile < k {
-        // Load A tile: one vec4 (4 contiguous f32 of a row) per thread.
-        {
-            let lin = linear_tid * 4;
-            let row = lin / TILE_K;
-            let col0 = lin % TILE_K;
-            let v = lhs.read((((tile_row + row) * k + k_tile + col0) / 4) as usize);
-            let base = (row * SMEM_A_STRIDE + col0) as usize;
-            smem_a.write(base, v.x);
-            smem_a.write(base + 1, v.y);
-            smem_a.write(base + 2, v.z);
-            smem_a.write(base + 3, v.w);
-        }
-        // Load B tile: one vec4 per thread.
-        {
-            let lin = linear_tid * 4;
-            let row = lin / TILE_N;
-            let col0 = lin % TILE_N;
-            let v = rhs.read((((k_tile + row) * n + tile_col + col0) / 4) as usize);
-            let base = (row * SMEM_B_STRIDE + col0) as usize;
-            smem_b.write(base, v.x);
-            smem_b.write(base + 1, v.y);
-            smem_b.write(base + 2, v.z);
-            smem_b.write(base + 3, v.w);
-        }
-        khal_std::sync::workgroup_memory_barrier_with_group_sync();
-
-        let a_row_base = tid_y * THREAD_M;
-        let b_col_base = tid_x * THREAD_N;
-        let mut kk: u32 = 0;
-        while kk < TILE_K {
-            let a0 = smem_a.read((a_row_base * SMEM_A_STRIDE + kk) as usize);
-            let a1 = smem_a.read(((a_row_base + 1) * SMEM_A_STRIDE + kk) as usize);
-            let a2 = smem_a.read(((a_row_base + 2) * SMEM_A_STRIDE + kk) as usize);
-            let a3 = smem_a.read(((a_row_base + 3) * SMEM_A_STRIDE + kk) as usize);
-            let bvec = Vec4::new(
-                smem_b.read((kk * SMEM_B_STRIDE + b_col_base) as usize),
-                smem_b.read((kk * SMEM_B_STRIDE + b_col_base + 1) as usize),
-                smem_b.read((kk * SMEM_B_STRIDE + b_col_base + 2) as usize),
-                smem_b.read((kk * SMEM_B_STRIDE + b_col_base + 3) as usize),
-            );
-            acc[0] = bvec.mul_add(Vec4::splat(a0), acc[0]);
-            acc[1] = bvec.mul_add(Vec4::splat(a1), acc[1]);
-            acc[2] = bvec.mul_add(Vec4::splat(a2), acc[2]);
-            acc[3] = bvec.mul_add(Vec4::splat(a3), acc[3]);
-            kk += 1;
-        }
-        khal_std::sync::workgroup_memory_barrier_with_group_sync();
-        k_tile += TILE_K;
-    }
-
-    // Store (contiguous out, full tile -> no bounds checks).
-    let out_row = tile_row + tid_y * THREAD_M;
-    let out_col = tile_col + tid_x * THREAD_N;
-    let mut i: u32 = 0;
-    while i < THREAD_M {
-        let arr = acc[i as usize].to_array();
-        let mut j: u32 = 0;
-        while j < THREAD_N {
-            out.write((((out_row + i) * n) + out_col + j) as usize, arr[j as usize]);
-            j += 1;
-        }
-        i += 1;
     }
 }
 

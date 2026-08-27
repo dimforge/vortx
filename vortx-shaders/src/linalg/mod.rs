@@ -16,7 +16,7 @@ pub use shape::{Shapes1, Shapes2, Shapes3};
 #[cfg(not(target_arch_is_gpu))]
 pub use contiguous::{Contiguous, ContiguousWithOffset};
 #[cfg(not(target_arch_is_gpu))]
-pub use gemm::{GemmNaive, GemmTiled, GemmTiledVec4};
+pub use gemm::{GemmNaive, GemmTiled};
 #[cfg(not(target_arch_is_gpu))]
 pub use op_assign::{GpuAdd, GpuCopy, GpuCopyWithOffsets, GpuDiv, GpuMul, GpuSub};
 #[cfg(not(target_arch_is_gpu))]

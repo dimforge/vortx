@@ -8,7 +8,7 @@
 use crate::shaders::ml::{GpuPpoActorGrad, GpuPpoValueGrad};
 use crate::tensor::{AsTensorMut, AsTensorRef};
 use khal::Shader;
-use khal::backend::{GpuBackend, GpuBackendError, GpuPass};
+use khal::backend::{GpuBackendError, GpuPass};
 
 // Re-export the params structs from the shader crate.
 pub use vortx_shaders::ml::ppo::{PpoActorParams, PpoValueParams};
