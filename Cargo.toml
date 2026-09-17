@@ -20,6 +20,9 @@ webgpu = [ "khal/webgpu" ]
 cpu = ["khal/cpu", "vortx-shaders/cpu"]
 cpu-parallel = ["cpu", "vortx-shaders/cpu-parallel"]
 cuda = ["khal/cuda", "khal-builder/cuda", "vortx-shaders/cuda"]
+# Native CUDA with kernels compiled by cuda-oxide (`cargo oxide`) instead of
+# rust-cuda's `cargo cuda`. Implies `cuda`.
+cuda-oxide = ["cuda", "khal-builder/cuda-oxide", "vortx-shaders/cuda-oxide"]
 metal = ["khal/metal"]
 push_constants = ["khal/push_constants", "vortx-shaders/push_constants"]
 subgroup_ops = ["khal/subgroup_ops", "vortx-shaders/subgroup_ops"]
@@ -62,8 +65,10 @@ khal-builder = "0.3"
 vortx-shaders = { version = "0.4", path = "./vortx-shaders" }
 
 [patch.crates-io]
-#khal-builder = { path = "../khal/crates/khal-builder" }
-#khal = { path = "../khal/crates/khal" }
-#khal-std = { path = "../khal/crates/khal-std" }
-#khal-derive = { path = "../khal/crates/khal-derive" }
+# Local khal checkout: the `cuda-oxide` feature (and the cubin/PTX build
+# fixes) are not on crates.io yet.
+khal-builder = { path = "../khal/crates/khal-builder" }
+khal = { path = "../khal/crates/khal" }
+khal-std = { path = "../khal/crates/khal-std" }
+khal-derive = { path = "../khal/crates/khal-derive" }
 #glamx = { git = "https://github.com/dimforge/glamx", branch = "bytemuck" }

@@ -22,6 +22,9 @@ subgroup_ops = []
 cpu = ["khal-std/cpu", "khal/cpu"]
 cpu-parallel = ["cpu", "khal-std/cpu-parallel"]
 cuda = ["khal-std/cuda", "khal/cuda"]
+# Compile the CUDA kernels with the cuda-oxide backend (host-target unified
+# interception) instead of rust-cuda.
+cuda-oxide = ["cuda", "khal-std/cuda-oxide"]
 # Enables machine-learning (llm inference, reinforcement learning, etc.) operators.
 ml = []
 
