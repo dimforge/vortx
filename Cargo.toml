@@ -22,7 +22,10 @@ cpu-parallel = ["cpu", "vortx-shaders/cpu-parallel"]
 cuda = ["khal/cuda", "khal-builder/cuda", "vortx-shaders/cuda"]
 # Native CUDA with kernels compiled by cuda-oxide (`cargo oxide`) instead of
 # rust-cuda's `cargo cuda`. Implies `cuda`.
-cuda-oxide = ["cuda", "khal-builder/cuda-oxide", "vortx-shaders/cuda-oxide"]
+# Not forwarded to `vortx-shaders/cuda-oxide`: khal-builder enables that in its
+# own `cargo oxide` build; in the host build it would break the CPU backend
+# (GPU-only libdevice externs in khal-std's `Float`).
+cuda-oxide = ["cuda", "khal-builder/cuda-oxide"]
 metal = ["khal/metal"]
 push_constants = ["khal/push_constants", "vortx-shaders/push_constants"]
 subgroup_ops = ["khal/subgroup_ops", "vortx-shaders/subgroup_ops"]
