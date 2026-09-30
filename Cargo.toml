@@ -20,6 +20,12 @@ webgpu = [ "khal/webgpu" ]
 cpu = ["khal/cpu", "vortx-shaders/cpu"]
 cpu-parallel = ["cpu", "vortx-shaders/cpu-parallel"]
 cuda = ["khal/cuda", "khal-builder/cuda", "vortx-shaders/cuda"]
+# Native CUDA with kernels compiled by cuda-oxide (`cargo oxide`) instead of
+# rust-cuda's `cargo cuda`. Implies `cuda`.
+# Not forwarded to `vortx-shaders/cuda-oxide`: khal-builder enables that in its
+# own `cargo oxide` build; in the host build it would break the CPU backend
+# (GPU-only libdevice externs in khal-std's `Float`).
+cuda-oxide = ["cuda", "khal-builder/cuda-oxide"]
 metal = ["khal/metal"]
 push_constants = ["khal/push_constants", "vortx-shaders/push_constants"]
 subgroup_ops = ["khal/subgroup_ops", "vortx-shaders/subgroup_ops"]
@@ -62,8 +68,10 @@ khal-builder = "0.3"
 vortx-shaders = { version = "0.4", path = "./vortx-shaders" }
 
 [patch.crates-io]
-#khal-builder = { path = "../khal/crates/khal-builder" }
-#khal = { path = "../khal/crates/khal" }
-#khal-std = { path = "../khal/crates/khal-std" }
-#khal-derive = { path = "../khal/crates/khal-derive" }
+# khal from GitHub: the `cuda-oxide` feature (and the cubin/PTX build
+# fixes) are not on crates.io yet.
+khal-builder = { git = "https://github.com/dimforge/khal", branch = "main" }
+khal = { git = "https://github.com/dimforge/khal", branch = "main" }
+khal-std = { git = "https://github.com/dimforge/khal", branch = "main" }
+khal-derive = { git = "https://github.com/dimforge/khal", branch = "main" }
 #glamx = { git = "https://github.com/dimforge/glamx", branch = "bytemuck" }
