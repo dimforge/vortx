@@ -68,10 +68,10 @@ khal-builder = "0.3"
 vortx-shaders = { version = "0.4", path = "./vortx-shaders" }
 
 [patch.crates-io]
-# Local khal checkout: the `cuda-oxide` feature (and the cubin/PTX build
+# khal from GitHub: the `cuda-oxide` feature (and the cubin/PTX build
 # fixes) are not on crates.io yet.
-khal-builder = { path = "../khal/crates/khal-builder" }
-khal = { path = "../khal/crates/khal" }
-khal-std = { path = "../khal/crates/khal-std" }
-khal-derive = { path = "../khal/crates/khal-derive" }
+khal-builder = { git = "https://github.com/dimforge/khal", branch = "main" }
+khal = { git = "https://github.com/dimforge/khal", branch = "main" }
+khal-std = { git = "https://github.com/dimforge/khal", branch = "main" }
+khal-derive = { git = "https://github.com/dimforge/khal", branch = "main" }
 #glamx = { git = "https://github.com/dimforge/glamx", branch = "bytemuck" }
