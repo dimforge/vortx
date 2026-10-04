@@ -1,5 +1,22 @@
 # Changelog
 
+## v0.5.0
+
+### Added
+
+- New `ml` feature enabling the `vortx::ml` module of machine-learning operators: activations (incl. `tanh`/`elu` backward), unary ops, softmax/log-softmax, RMS norm, layer norm, RoPE, SiLU, fused attention, axis reductions, concat, gather, select, conv2d/conv-transpose-2d, im2col, pooling, window partitioning, the Adam optimizer, PPO gradients, and quantized GEMV (Q4/Q5/Q8 and K-quants, with CPU-side `quantization` blocks). The optional `rand` feature adds `Distribution` impls for sampling random quantized blocks.
+- `cuda-oxide` feature to compile the CUDA kernels with cuda-oxide instead of rust-cuda. It is commented out in the published crates: it needs khal from GitHub through `[patch]`.
+- `vortx_shaders::linalg::{contiguous, op_assign}::MAX_NUM_THREADS` are now public.
+
+### Changed
+
+- Update to `khal`/`khal-std`/`khal-builder` 0.4.
+- `gemm_tiled` accumulates with `Vec4` FMAs.
+
+### Fixed
+
+- `Contiguous` and `OpAssign` now clamp their dispatch size to `MAX_NUM_THREADS`, fixing tensors too large for the workgroup-count limit.
+
 ## v0.4.0
 
 ### Changed

@@ -34,11 +34,11 @@ unsafe_remove_boundchecks = []
 ml = ["vortx-shaders/ml"]
 
 [workspace.package]
-version = "0.4.0"
+version = "0.5.0"
 
 [workspace.dependencies]
-khal-std = "0.3"
-khal = { version = "0.3", features = ["derive"]}
+khal-std = "0.4"
+khal = { version = "0.4", features = ["derive"]}
 
 [dependencies]
 bytemuck = "1"
@@ -47,7 +47,7 @@ nalgebra = "0.35"
 khal = { workspace = true }
 khal-std = { workspace = true }
 # Shader crate provides both GPU shader code and generated ShaderArgs via spirv_bindgen
-vortx-shaders = { version = "0.4", path = "vortx-shaders" }
+vortx-shaders = { version = "0.5", path = "vortx-shaders" }
 rand = { version = "0.10", optional = true }
 
 [dev-dependencies]
@@ -63,15 +63,14 @@ anyhow = "1"
 wgpu = "30"
 
 [build-dependencies]
-khal-builder = "0.3"
+khal-builder = "0.4"
 # To build the shader from the dependency instead of local path.
-vortx-shaders = { version = "0.4", path = "./vortx-shaders" }
+vortx-shaders = { version = "0.5", path = "./vortx-shaders" }
 
 [patch.crates-io]
-# khal from GitHub: the `cuda-oxide` feature (and the cubin/PTX build
-# fixes) are not on crates.io yet.
-khal-builder = { git = "https://github.com/dimforge/khal", branch = "main" }
-khal = { git = "https://github.com/dimforge/khal", branch = "main" }
-khal-std = { git = "https://github.com/dimforge/khal", branch = "main" }
-khal-derive = { git = "https://github.com/dimforge/khal", branch = "main" }
+# khal from GitHub: the `cuda-oxide` feature is not on crates.io.
+khal-builder = { git = "https://github.com/dimforge/khal", tag = "v0.4.0" }
+khal = { git = "https://github.com/dimforge/khal", tag = "v0.4.0" }
+khal-std = { git = "https://github.com/dimforge/khal", tag = "v0.4.0" }
+khal-derive = { git = "https://github.com/dimforge/khal", tag = "v0.4.0" }
 #glamx = { git = "https://github.com/dimforge/glamx", branch = "bytemuck" }
