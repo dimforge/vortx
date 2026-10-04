@@ -68,8 +68,9 @@ khal-builder = "0.4"
 vortx-shaders = { version = "0.5", path = "./vortx-shaders" }
 
 [patch.crates-io]
-#khal-builder = { path = "../khal/crates/khal-builder" }
-#khal = { path = "../khal/crates/khal" }
-#khal-std = { path = "../khal/crates/khal-std" }
-#khal-derive = { path = "../khal/crates/khal-derive" }
+# khal from GitHub: the `cuda-oxide` feature is not on crates.io.
+khal-builder = { git = "https://github.com/dimforge/khal", tag = "v0.4.0" }
+khal = { git = "https://github.com/dimforge/khal", tag = "v0.4.0" }
+khal-std = { git = "https://github.com/dimforge/khal", tag = "v0.4.0" }
+khal-derive = { git = "https://github.com/dimforge/khal", tag = "v0.4.0" }
 #glamx = { git = "https://github.com/dimforge/glamx", branch = "bytemuck" }
